@@ -1,0 +1,11 @@
+{
+  "extensions": {
+    "skills": [
+      "skill-wizard-harness",
+      "github-init"
+    ],
+    "commands": [],
+    "agents": [],
+    "plugins": []
+  }
+}

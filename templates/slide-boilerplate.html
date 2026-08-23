@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>{덱 이름}</title>
+<!--
+  deck.html 뼈대 — references/html-spec.md 사양 준수.
+  - 캔버스 1280×720px 고정(16:9). 좌표·크기는 이 기준으로 계산된다 (1px = 9525 EMU).
+  - :root 변수는 design-system.md의 토큰 표 값으로 치환해 주입한다.
+  - 변환 대상 요소(.el-*)는 .slide 직계 자식 + 인라인 style의 left/top/width/height(px)로만 배치.
+  - 인라인 style 안에서 var(--토큰) 사용 가능 — 변환기·lint가 :root 값으로 해석한다.
+  - 금지 CSS 12항은 references/conversion-rules.md 참조 (그라데이션·그림자·filter·반투명 등).
+-->
+<style>
+:root {
+  /* design-system.md 팔레트 표의 값으로 치환 */
+  --color-bg: #FFFFFF;
+  --color-surface: #EEF2F6;
+  --color-text: #1F2937;
+  --color-primary: #0F4C81;
+  --color-accent: #B7791F;
+  --color-warning: #C0392B;
+  --color-line: #D9D9D9;
+  /* 타이포그래피 */
+  --font-heading: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  /* radius 계층 */
+  --radius-lg: 16px;
+  --radius-sm: 6px;
+  /* 여백 리듬 */
+  --space-margin: 64px;
+  --space-block: 32px;
+  --space-el: 16px;
+}
+@page { size: 1280px 720px; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: var(--font-body); color: var(--color-text); }
+.slide {
+  position: relative;
+  width: 1280px; height: 720px;
+  overflow: hidden;
+  background: var(--color-bg);
+  page-break-after: always;
+  /* .slide 직계 수준 flex/grid 금지 — 자식은 절대 배치만 (금지 CSS 10항) */
+}
+.slide:last-of-type { page-break-after: auto; } /* PDF 말미 빈 페이지 방지 */
+@media screen {
+  /* 브라우저 시각 확인(렌더 게이트 ③)용 — 인쇄에는 영향 없음 */
+  body { background: #F5F5F5; }
+  .slide { margin: 24px auto; outline: 1px solid #D9D9D9; }
+}
+.el-text, .el-shape, .el-table { position: absolute; }
+img.el-image { position: absolute; object-fit: contain; }
+/* 헤딩 크기는 .el-text 인라인 font-size를 그대로 따른다 (UA 기본 2em 배율 차단 —
+   변환기는 인라인 px 값을 좌표 근거로 삼으므로 브라우저 렌더와 일치해야 한다) */
+.el-text h1, .el-text h2, .el-text h3 { font-size: inherit; font-weight: inherit; }
+.el-text ul, .el-text ol { list-style-position: outside; padding-left: 28px; }
+.el-text li { margin-bottom: 8px; }
+.el-table { border-collapse: collapse; }
+.el-table th, .el-table td { border: 1px solid var(--color-line); }
+.el-text .source, .el-text .caption { color: var(--color-text); }
+aside.notes { display: none; } /* 발표자 노트 — 화면 비표시, PPTX notes로 이관 */
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  장표 예시 — 실제 덱에서는 storyline.md의 장표 수만큼 <section>을 만든다.
+  모든 섹션 필수 속성: data-role(enum), data-key-message(키 메시지 1문장).
+  data-role enum: cover | agenda | section-divider | problem | insight | solution |
+                  evidence | comparison | case | roadmap | team | financials | cta | appendix
+============================================================ -->
+
+<section class="slide" data-role="cover" data-key-message="{키 메시지 1문장}">
+  <!-- .el-shape: 단색 도형. 텍스트는 넣지 않는다(텍스트는 .el-text로 분리) -->
+  <div class="el-shape" style="left: 0px; top: 0px; width: 1280px; height: 12px; background-color: var(--color-primary);"></div>
+
+  <!-- .el-text: 텍스트박스로 변환. 내부 허용: h1~h3 / p / ul·ol·li, 인라인 b·strong·em·span(color) -->
+  <div class="el-text" style="left: 96px; top: 240px; width: 1088px; height: 120px; font-family: var(--font-heading); font-size: 48px; font-weight: 700; text-align: center; color: var(--color-primary);">
+    <h1>{장표 제목 — 제목은 주장이다}</h1>
+  </div>
+  <div class="el-text" style="left: 96px; top: 380px; width: 1088px; height: 60px; font-size: 24px; text-align: center;">
+    <p>{부제 — 키 메시지}</p>
+  </div>
+  <div class="el-text" style="left: 96px; top: 620px; width: 1088px; height: 40px; font-size: 18px; text-align: center;">
+    <p>{발표자·소속·일자}</p>
+  </div>
+
+  <!-- .el-image 예시: 로컬 상대 경로만 허용 (외부 URL 금지 — lint 체크 5)
+  <img class="el-image" src="assets/cover-visual.png" alt="{시각 요소 설명}"
+       style="left: 520px; top: 460px; width: 240px; height: 135px;">
+  -->
+
+  <!-- .el-table 예시: 셀 값은 나열이 아니라 판단(비교 기준)을 드러내야 한다
+  <table class="el-table" style="left: 96px; top: 300px; width: 1088px; height: 240px; font-size: 18px;">
+    <thead><tr><th>기준</th><th>현행</th><th>제안</th></tr></thead>
+    <tbody><tr><td>{판단 기준}</td><td>{현행 판단}</td><td>{제안 판단}</td></tr></tbody>
+  </table>
+  -->
+
+  <!-- 수치가 있는 장표는 출처 필수 (lint 체크 15)
+  <div class="el-text source" style="left: 96px; top: 688px; width: 1088px; height: 20px; font-size: 12px;">
+    <p>출처: {기관·문서·연도}</p>
+  </div>
+  -->
+
+  <aside class="notes">{발표자 노트 — 실제 발화 원고, 격식체. 비우면 lint ERROR}</aside>
+</section>
+
+</body>
+</html>

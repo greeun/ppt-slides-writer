@@ -1,0 +1,23 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion render Full-Presentation",
+    "build:still": "remotion still",
+    "pdf": "node scripts/render-pdf.mjs",
+    "pdf:section": "node scripts/render-pdf.mjs --section"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.512",
+    "@remotion/fonts": "^4.0.512",
+    "@remotion/transitions": "^4.0.512",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.2.8",
+    "remotion": "^4.0.512"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "typescript": "^5.7.0"
+  }
+}

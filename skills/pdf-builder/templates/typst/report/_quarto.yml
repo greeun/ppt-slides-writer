@@ -1,0 +1,51 @@
+# Typst Report Template (비즈니스 보고서)
+# 소스: Repos/kb-am-ai-etf/reports/2026-01-05-기획/_quarto.yml
+# 사용: 폴더 전체를 복사하거나 파일들을 개별 복사
+
+project:
+  type: default
+  output-dir: _output
+  render:
+    - report.qmd
+
+# 전역 figure/table 설정
+fig-width: 6
+fig-height: 4
+fig-align: center
+tbl-cap-location: top
+tbl-colwidths: false
+
+format:
+  typst:
+    # 출력 파일명 (프로젝트별 수정)
+    # output-file: "프로젝트명-YYYYMMDD.pdf"
+
+    # 페이지 설정
+    papersize: a4
+    margin:
+      top: 30mm
+      bottom: 30mm
+      left: 25mm
+      right: 25mm
+
+    # 폰트 설정
+    mainfont: "Pretendard"
+    fontsize: 11pt
+
+    # 목차 - 비활성화 (cover-with-toc.typ에서 직접 처리)
+    toc: false
+    number-sections: true
+
+    # 섹션 번호
+    section-numbering: "1.1.1"
+
+    # 콜아웃 언어
+    lang: ko
+
+    # 표지 + 목차
+    include-before-body:
+      - cover-with-toc.typ
+
+    # Typst 템플릿 (표/이미지 전역 스타일)
+    template-partials:
+      - typst-show.typ

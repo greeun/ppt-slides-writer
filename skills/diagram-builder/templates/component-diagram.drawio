@@ -1,0 +1,93 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="21.0.0">
+  <diagram name="컴포넌트 다이어그램 템플릿" id="component-diagram-template">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="[프로젝트명] 컴포넌트 다이어그램" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="10" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Package 1: Core Modules -->
+        <mxCell id="pkg1" value="&lt;&lt;package&gt;&gt;&#xa;Core Modules" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=50;tabHeight=14;tabPosition=left;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="300" height="200" as="geometry"/>
+        </mxCell>
+        <!-- Core 모듈들 -->
+        <mxCell id="m1" value="Module A&#xa;─────────&#xa;• Feature 1&#xa;• Feature 2" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="m2" value="Module B&#xa;─────────&#xa;• Feature 1&#xa;• Feature 2" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="200" y="90" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="m3" value="Module C&#xa;─────────&#xa;• Feature 1&#xa;• Feature 2" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="60" y="170" width="120" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Package 2: AI Modules -->
+        <mxCell id="pkg2" value="&lt;&lt;package&gt;&gt;&#xa;AI Modules" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=50;tabHeight=14;tabPosition=left;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="360" y="50" width="300" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="m4" value="AI Module A&#xa;─────────&#xa;• ML Feature&#xa;• Inference" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="380" y="90" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="m5" value="AI Module B&#xa;─────────&#xa;• NLP&#xa;• Generation" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="520" y="90" width="120" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Package 3: Shared Services -->
+        <mxCell id="pkg3" value="&lt;&lt;package&gt;&gt;&#xa;Shared Services" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=50;tabHeight=14;tabPosition=left;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="270" width="620" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc1" value="API&#xa;Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="60" y="310" width="85" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc2" value="Cache&#xa;Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="160" y="310" width="85" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc3" value="Queue&#xa;Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="260" y="310" width="85" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc4" value="Logger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a20025;strokeColor=#6F0000;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="360" y="310" width="85" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Dependencies (점선 화살표) -->
+        <mxCell id="dep1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666" edge="1" parent="1" source="m1" target="svc1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="dep2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666" edge="1" parent="1" source="m4" target="svc1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000" vertex="1" parent="1">
+          <mxGeometry x="680" y="50" width="120" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="680" y="55" width="120" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1">
+          <mxGeometry x="690" y="75" width="15" height="12" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1-text" value="Core Module" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=8" vertex="1" parent="1">
+          <mxGeometry x="710" y="73" width="80" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="690" y="93" width="15" height="12" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2-text" value="AI Module" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=8" vertex="1" parent="1">
+          <mxGeometry x="710" y="91" width="80" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="690" y="111" width="15" height="12" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3-text" value="Workflow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=8" vertex="1" parent="1">
+          <mxGeometry x="710" y="109" width="80" height="15" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

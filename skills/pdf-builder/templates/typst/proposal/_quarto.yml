@@ -1,0 +1,57 @@
+# ============================================
+# Frentis 제안서 템플릿
+# ============================================
+# 사용법: 이 파일을 프로젝트 폴더에 복사 후 아래 항목 수정
+#
+# 필수 수정:
+#   - output-file: 출력 PDF 파일명
+#   - render: 메인 QMD 파일명
+#
+# 함께 복사할 파일:
+#   - cover-with-toc.typ (표지+목차, 내용 수정 필요)
+#   - typst-show.typ (스타일, 헤더 텍스트 수정)
+# ============================================
+
+project:
+  type: default
+  output-dir: _output
+  render:
+    - index.qmd              # ← 메인 QMD 파일명으로 변경
+
+# 전역 figure/table 설정
+fig-width: 6
+fig-height: 4
+fig-align: center
+tbl-cap-location: top
+tbl-colwidths: false
+
+format:
+  typst:
+    output-file: "제안서.pdf"  # ← 출력 파일명 변경
+    keep-typ: true
+
+    # ===== 페이지 설정 (수정 금지) =====
+    papersize: a4
+    margin:
+      top: 25mm
+      bottom: 25mm
+      left: 20mm
+      right: 20mm
+
+    # ===== 폰트 설정 (수정 금지) =====
+    mainfont: "Pretendard"
+    fontsize: 10pt
+
+    # ===== 목차 설정 =====
+    toc: false                # cover-with-toc.typ에서 처리
+    number-sections: true
+    section-numbering: "1.1.1"
+
+    # ===== 언어 =====
+    lang: ko
+
+    # ===== 템플릿 파일 =====
+    include-before-body:
+      - cover-with-toc.typ    # 표지 + 목차
+    template-partials:
+      - typst-show.typ        # 스타일 시트

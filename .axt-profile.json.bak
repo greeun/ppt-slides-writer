@@ -1,0 +1,10 @@
+{
+  "extensions": {
+    "skills": [
+      "skill-wizard-harness"
+    ],
+    "commands": [],
+    "agents": [],
+    "plugins": []
+  }
+}

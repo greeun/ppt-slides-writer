@@ -1,0 +1,24 @@
+# Typst Catalog Template (교육과정 설명서)
+# 소스: Reports/CAT-AI-2026/_quarto.yml
+# 사용: 폴더 전체를 복사하거나 파일들을 개별 복사
+
+project:
+  type: default
+  output-dir: _output
+
+format:
+  typst:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    papersize: a4
+    margin:
+      x: 2.5cm
+      y: 2.5cm
+    mainfont: "Pretendard"
+    fontsize: 10pt
+    template-partials:
+      - typst-template.typ
+      - typst-show.typ
+
+lang: ko

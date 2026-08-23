@@ -1,0 +1,157 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="21.0.0">
+  <diagram name="시스템 아키텍처 템플릿" id="system-architecture-template">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title: 프로젝트명으로 교체 -->
+        <mxCell id="title" value="[프로젝트명] - 시스템 아키텍처" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="10" width="400" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 1: Client Layer (파란 계열) -->
+        <mxCell id="layer1-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="920" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer1-label" value="Client Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="55" width="90" height="20" as="geometry"/>
+        </mxCell>
+        <!-- Client 요소들: 필요에 따라 추가/수정 -->
+        <mxCell id="client1" value="Web Dashboard&#xa;(React)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="160" y="70" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="client2" value="Mobile App&#xa;(React Native)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="310" y="70" width="130" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 2: API Gateway (보라 계열) -->
+        <mxCell id="layer2-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="920" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer2-label" value="API Gateway" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="135" width="90" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="gateway1" value="API Gateway&#xa;(FastAPI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="160" y="150" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="gateway2" value="Auth Service&#xa;(JWT/OAuth2)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="310" y="150" width="130" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 3: Application Services (빨간 계열) -->
+        <mxCell id="layer3-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="40" y="210" width="920" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer3-label" value="Application Services" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="215" width="120" height="20" as="geometry"/>
+        </mxCell>
+        <!-- 서비스들: 프로젝트에 맞게 추가 -->
+        <mxCell id="svc1" value="Service A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc2" value="Service B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="205" y="240" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc3" value="Service C" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="350" y="240" width="130" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 4: AI/Core + Data (좌우 분할) -->
+        <mxCell id="layer4a-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="40" y="310" width="440" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer4a-label" value="AI Core" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="315" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ai1" value="LLM API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="ai2" value="RAG Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="200" y="340" width="120" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="layer4b-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="500" y="310" width="460" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer4b-label" value="Data Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="510" y="315" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="db1" value="PostgreSQL" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="520" y="340" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="db2" value="Redis&#xa;Cache" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="640" y="340" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="db3" value="Vector DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="760" y="340" width="100" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 5: External/Data Ingestion (핑크 계열) -->
+        <mxCell id="layer5-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6d0de;strokeColor=#996185;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="920" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer5-label" value="External Services" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="415" width="110" height="20" as="geometry"/>
+        </mxCell>
+        <!-- 외부 서비스들 -->
+        <mxCell id="ext1" value="External&#xa;API 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1306C;strokeColor=#C13584;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="160" y="430" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="ext2" value="External&#xa;API 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1877F2;strokeColor=#1565C0;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="300" y="430" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Layer 6: Infrastructure (청록 계열) -->
+        <mxCell id="layer6-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;opacity=50" vertex="1" parent="1">
+          <mxGeometry x="40" y="490" width="920" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer6-label" value="Infrastructure" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="495" width="90" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="infra1" value="Kubernetes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#326ce5;strokeColor=#1a4db3;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="160" y="510" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="infra2" value="Docker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2496ED;strokeColor=#1a6db3;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="300" y="510" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="infra3" value="AWS/GCP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#cc7a00;fontColor=#ffffff;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="440" y="510" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- 화살표 예시: 레이어 간 수직 흐름 -->
+        <!-- ============================================================ -->
+
+        <!-- Client → Gateway (수직 하향) -->
+        <mxCell id="arrow-client-gateway"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;exitX=0.5;exitY=1;entryX=0.5;entryY=0"
+          edge="1" parent="1" source="client1" target="gateway1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Gateway → Service (수직 하향) -->
+        <mxCell id="arrow-gateway-svc"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;exitX=0.5;exitY=1;entryX=0.5;entryY=0"
+          edge="1" parent="1" source="gateway1" target="svc1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Service → AI (수직 하향, waypoint 사용) -->
+        <mxCell id="arrow-svc-ai"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;exitX=0.5;exitY=1;entryX=0.5;entryY=0"
+          edge="1" parent="1" source="svc1" target="ai1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AI → DB (수평, 레이어 간 연결) -->
+        <mxCell id="arrow-ai-db"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5"
+          edge="1" parent="1" source="ai2" target="db1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

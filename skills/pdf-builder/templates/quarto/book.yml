@@ -1,0 +1,68 @@
+# Quarto Book Template (출판용 기술서)
+# 소스: Books/ai-dlc-book/_quarto.yml
+# 사용: cp book.yml _quarto.yml
+
+project:
+  type: book
+  output-dir: _output
+
+book:
+  title: "책 제목"
+  subtitle: "부제목"
+  author: "저자"
+  date: today
+  language: ko
+
+  chapters:
+    - index.qmd
+    - part: "Part 1: 제목"
+      chapters:
+        - chapters/ch01.qmd
+        - chapters/ch02.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-tools: true
+
+  # 기본 PDF (A4)
+  pdf:
+    documentclass: book
+    papersize: a4
+    fontsize: 11pt
+    mainfont: "NanumSquare"
+    sansfont: "NanumSquare"
+    monofont: "D2CodingLigature Nerd Font"
+    CJKmainfont: "NanumSquare"
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    colorlinks: true
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=30mm
+      - right=25mm
+
+  # bitPublish (한글 책 전문 조판)
+  bitPublish-pdf:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    highlight-style: github
+    code-block-bg: "#f6f8fa"
+    code-block-border-left: "#0969da"
+    monofont: "D2CodingLigature Nerd Font"
+    mermaid-format: png
+    include-in-header: preamble.tex
+
+  epub:
+    toc: true
+    toc-depth: 2
+    number-sections: true

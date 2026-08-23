@@ -1,0 +1,166 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="21.0.0">
+  <diagram name="데이터 플로우 템플릿" id="data-flow-template">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="[프로젝트명] 데이터 처리 흐름" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="10" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 1: Input -->
+        <mxCell id="stage1" value="① Input" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;opacity=50;verticalAlign=top;fontStyle=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="src1" value="Source A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1306C;strokeColor=#C13584;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="70" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="src2" value="Source B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1877F2;strokeColor=#1565C0;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="150" y="80" width="70" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="collector" value="Data Collector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="60" y="125" width="160" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="normalizer" value="Normalizer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="60" y="165" width="70" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="queue" value="Queue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="150" y="165" width="70" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 2: Processing -->
+        <mxCell id="stage2" value="② Processing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;opacity=50;verticalAlign=top;fontStyle=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="260" y="50" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="proc1" value="Process A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="proc2" value="Process B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="370" y="80" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="proc3" value="Process C" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="280" y="130" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="ai-engine" value="AI Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="370" y="130" width="70" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 3: Transform -->
+        <mxCell id="stage3" value="③ Transform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;opacity=50;verticalAlign=top;fontStyle=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="480" y="50" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="trans1" value="Transform A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="500" y="80" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="trans2" value="Transform B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="590" y="80" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="validate" value="Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="500" y="130" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="human" value="Human&#xa;Review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="590" y="130" width="70" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 4: Output -->
+        <mxCell id="stage4" value="④ Output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;opacity=50;verticalAlign=top;fontStyle=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="700" y="50" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="db" value="Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="cache" value="Cache" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="810" y="80" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="output1" value="Output A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="720" y="135" width="70" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="output2" value="Output B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="810" y="135" width="70" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- Flow Arrows: exitX/Y, entryX/Y 명시로 화살표 경로 제어 -->
+        <!-- ============================================================ -->
+
+        <!-- Stage 1 → Stage 2: 수평 흐름 (오른쪽 방향) -->
+        <mxCell id="flow1"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.5"
+          edge="1" parent="1" source="queue" target="proc1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 2 → Stage 3: 수평 흐름 -->
+        <mxCell id="flow2"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.5"
+          edge="1" parent="1" source="ai-engine" target="trans1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 3 → Stage 4: 수평 흐름 -->
+        <mxCell id="flow3"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.5"
+          edge="1" parent="1" source="human" target="db">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 내부 흐름: Source → Collector (수직 하향) -->
+        <mxCell id="flow-src-collector"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#999999;exitX=0.5;exitY=1;entryX=0.25;entryY=0"
+          edge="1" parent="1" source="src1" target="collector">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- 내부 흐름: Collector → Normalizer (수직 하향) -->
+        <mxCell id="flow-collector-norm"
+          style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#999999;exitX=0.25;exitY=1;entryX=0.5;entryY=0"
+          edge="1" parent="1" source="collector" target="normalizer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Workflow (Bottom) -->
+        <mxCell id="workflow-bg" value="워크플로우" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;opacity=50;verticalAlign=top;fontStyle=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="860" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="step1" value="Step 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="60" y="280" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="step2" value="Step 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="160" y="280" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="step3" value="Step 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="260" y="280" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="step4" value="Step 4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="360" y="280" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="step5" value="Step 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="460" y="280" width="70" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="step6" value="Done" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1306C;strokeColor=#C13584;fontColor=#ffffff;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="560" y="280" width="70" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Workflow Arrows -->
+        <mxCell id="wf1" style="edgeStyle=none;rounded=0;html=1;strokeWidth=1;strokeColor=#0e8088;endArrow=classic" edge="1" parent="1" source="step1" target="step2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wf2" style="edgeStyle=none;rounded=0;html=1;strokeWidth=1;strokeColor=#0e8088;endArrow=classic" edge="1" parent="1" source="step2" target="step3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wf3" style="edgeStyle=none;rounded=0;html=1;strokeWidth=1;strokeColor=#0e8088;endArrow=classic" edge="1" parent="1" source="step3" target="step4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wf4" style="edgeStyle=none;rounded=0;html=1;strokeWidth=1;strokeColor=#0e8088;endArrow=classic" edge="1" parent="1" source="step4" target="step5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wf5" style="edgeStyle=none;rounded=0;html=1;strokeWidth=1;strokeColor=#0e8088;endArrow=classic" edge="1" parent="1" source="step5" target="step6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

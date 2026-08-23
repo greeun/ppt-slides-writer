@@ -1,0 +1,61 @@
+# Typst Book Template (기술서)
+# 용도: 챕터/파트 구조의 책
+# 주의: type: default 사용 (book 타입은 Typst 미지원)
+
+project:
+  type: default
+  output-dir: _output
+  render:
+    - index.qmd
+    - chapters/*.qmd
+
+# 전역 figure/table 설정
+fig-width: 6
+fig-height: 4
+fig-align: center
+tbl-cap-location: top
+tbl-colwidths: false
+
+# 참고문헌
+bibliography: references.bib
+csl: apa.csl
+
+format:
+  typst:
+    # 페이지 설정
+    papersize: a4
+    margin:
+      top: 25mm
+      bottom: 25mm
+      left: 30mm
+      right: 25mm
+
+    # 폰트 설정
+    mainfont: "Pretendard"
+    fontsize: 11pt
+
+    # 목차
+    toc: true
+    toc-depth: 2
+    number-sections: true
+
+    # 섹션 번호 (챕터.섹션.서브섹션)
+    section-numbering: "1.1.1"
+
+    # 언어
+    lang: ko
+
+    # 표지 + 목차
+    include-before-body:
+      - cover-with-toc.typ
+
+    # Typst 템플릿 (스타일)
+    template-partials:
+      - typst-show.typ
+
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
