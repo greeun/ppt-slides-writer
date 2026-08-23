@@ -11,3 +11,14 @@ logs/
 .idea/
 *.swp
 *.swo
+
+# axt local tooling
+.axt*
+.claude/
+
+# python
+__pycache__/
+*.pyc
+
+# skill runtime output
+slides-work/
