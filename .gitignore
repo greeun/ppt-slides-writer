@@ -22,3 +22,6 @@ __pycache__/
 
 # skill runtime output
 slides-work/
+
+# skill build artifacts
+skill-wizard-output/
