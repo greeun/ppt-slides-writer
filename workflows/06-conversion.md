@@ -15,10 +15,10 @@ headless Chrome 필요 (PDF·렌더 검사·--image-slides). 부재 시 스크�
 
 ```bash
 # 네이티브 PPTX (기본 납품물 — 파워포인트에서 텍스트박스 자유 편집)
-python3 <SKILL_DIR>/scripts/html2pptx.py <WORK_DIR>/deck.html <WORK_DIR>/dist/deck.pptx
+python3 {SKILL_DIR}/scripts/html2pptx.py {WORK_DIR}/deck.html {WORK_DIR}/dist/deck.pptx
 
 # PDF (픽셀 동일 인쇄본)
-bash <SKILL_DIR>/scripts/html2pdf.sh <WORK_DIR>/deck.html <WORK_DIR>/dist/deck.pdf
+bash {SKILL_DIR}/scripts/html2pdf.sh {WORK_DIR}/deck.html {WORK_DIR}/dist/deck.pdf
 ```
 
 - 변환기가 오류 목록(파싱 집합 외 요소, 좌표 누락, colspan 등)과 함께 exit 2로
@@ -31,9 +31,9 @@ bash <SKILL_DIR>/scripts/html2pdf.sh <WORK_DIR>/deck.html <WORK_DIR>/dist/deck.p
 ## 2. 검증 21~26 실행 절차
 
 ```bash
-python3 <SKILL_DIR>/scripts/verify_conversion.py <WORK_DIR>/deck.html \
-    <WORK_DIR>/dist/deck.pptx <WORK_DIR>/dist/deck.pdf \
-    --report <WORK_DIR>/dist/verify_report.md
+python3 {SKILL_DIR}/scripts/verify_conversion.py {WORK_DIR}/deck.html \
+    {WORK_DIR}/dist/deck.pptx {WORK_DIR}/dist/deck.pdf \
+    --report {WORK_DIR}/dist/verify_report.md
 ```
 
 | # | 체크 | 판정 |

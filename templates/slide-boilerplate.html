@@ -76,14 +76,16 @@ aside.notes { display: none; } /* 발표자 노트 — 화면 비표시, PPTX no
   <!-- .el-shape: 단색 도형. 텍스트는 넣지 않는다(텍스트는 .el-text로 분리) -->
   <div class="el-shape" style="left: 0px; top: 0px; width: 1280px; height: 12px; background-color: var(--color-primary);"></div>
 
-  <!-- .el-text: 텍스트박스로 변환. 내부 허용: h1~h3 / p / ul·ol·li, 인라인 b·strong·em·span(color) -->
+  <!-- .el-text: 텍스트박스로 변환. 내부 허용: h1~h3 / p / ul·ol·li(1단만 — 중첩 리스트는 변환 오류),
+       인라인 b·strong·em·span(color). font-family는 인라인 명시가 원칙 — 미지정 시
+       변환기가 body 규칙(var(--font-body))을 폴백으로 적용한다 (conversion-rules §2) -->
   <div class="el-text" style="left: 96px; top: 240px; width: 1088px; height: 120px; font-family: var(--font-heading); font-size: 48px; font-weight: 700; text-align: center; color: var(--color-primary);">
     <h1>{장표 제목 — 제목은 주장이다}</h1>
   </div>
-  <div class="el-text" style="left: 96px; top: 380px; width: 1088px; height: 60px; font-size: 24px; text-align: center;">
+  <div class="el-text" style="left: 96px; top: 380px; width: 1088px; height: 60px; font-family: var(--font-heading); font-size: 24px; text-align: center;">
     <p>{부제 — 키 메시지}</p>
   </div>
-  <div class="el-text" style="left: 96px; top: 620px; width: 1088px; height: 40px; font-size: 18px; text-align: center;">
+  <div class="el-text" style="left: 96px; top: 620px; width: 1088px; height: 40px; font-family: var(--font-body); font-size: 18px; text-align: center;">
     <p>{발표자·소속·일자}</p>
   </div>
 
@@ -93,14 +95,14 @@ aside.notes { display: none; } /* 발표자 노트 — 화면 비표시, PPTX no
   -->
 
   <!-- .el-table 예시: 셀 값은 나열이 아니라 판단(비교 기준)을 드러내야 한다
-  <table class="el-table" style="left: 96px; top: 300px; width: 1088px; height: 240px; font-size: 18px;">
+  <table class="el-table" style="left: 96px; top: 300px; width: 1088px; height: 240px; font-family: var(--font-body); font-size: 18px;">
     <thead><tr><th>기준</th><th>현행</th><th>제안</th></tr></thead>
     <tbody><tr><td>{판단 기준}</td><td>{현행 판단}</td><td>{제안 판단}</td></tr></tbody>
   </table>
   -->
 
   <!-- 수치가 있는 장표는 출처 필수 (lint 체크 15)
-  <div class="el-text source" style="left: 96px; top: 688px; width: 1088px; height: 20px; font-size: 12px;">
+  <div class="el-text source" style="left: 96px; top: 688px; width: 1088px; height: 20px; font-family: var(--font-body); font-size: 12px;">
     <p>출처: {기관·문서·연도}</p>
   </div>
   -->

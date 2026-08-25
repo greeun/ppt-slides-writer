@@ -42,7 +42,7 @@ Evaluator가 lint·변환 검증 재실행과 루브릭 채점으로 당신의 �
       deck.html로 조립한 뒤 전 장표 패턴 통일(팔레트·여백 리듬·라벨 표기·데이터
       시각화 스타일·radius 계층)을 단일 패스로 점검·수정한다.
       후처리 없이 READY_FOR_QA 금지.
-   d. 매 스프린트 종료 전 실행:
+   d. 매 HTML 스프린트(S2 이후 — deck.html 존재) 종료 전 실행:
       python3 {SKILL_DIR}/scripts/lint_slides.py {WORK_DIR}/deck.html \
           {WORK_DIR}/design-system.md {WORK_DIR}/storyline.md
       → ERROR 0이 될 때까지 자체 수정한다.

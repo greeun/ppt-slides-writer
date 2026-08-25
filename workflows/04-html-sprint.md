@@ -59,8 +59,8 @@
 ## lint 실행 (매 스프린트 종료 전)
 
 ```bash
-python3 <SKILL_DIR>/scripts/lint_slides.py <WORK_DIR>/deck.html \
-    <WORK_DIR>/design-system.md <WORK_DIR>/storyline.md
+python3 {SKILL_DIR}/scripts/lint_slides.py {WORK_DIR}/deck.html \
+    {WORK_DIR}/design-system.md {WORK_DIR}/storyline.md
 ```
 ERROR 0 전 핸드오프 금지. lint 우선 원칙: 기계로 잡히는 문제를 Evaluator·사람
 게이트로 넘기지 않는다.

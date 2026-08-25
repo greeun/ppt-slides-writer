@@ -30,8 +30,8 @@
    design-system.md를 재동결한 뒤 전 장표에 재적용한다.
 5. 수정 후 **lint 재실행** (ERROR 0 확인):
    ```bash
-   python3 <SKILL_DIR>/scripts/lint_slides.py <WORK_DIR>/deck.html \
-       <WORK_DIR>/design-system.md <WORK_DIR>/storyline.md
+   python3 {SKILL_DIR}/scripts/lint_slides.py {WORK_DIR}/deck.html \
+       {WORK_DIR}/design-system.md {WORK_DIR}/storyline.md
    ```
 6. 수정 장표 목록과 lint 결과를 보고하고 게이트 ③을 다시 제시한다.
 7. 승인까지 반복한다. 수정 3회 이상 같은 장표가 반복 지적되면 해당 장표만

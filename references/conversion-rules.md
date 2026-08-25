@@ -28,13 +28,18 @@ python-pptx의 도형·텍스트 모델로 재현할 수 없거나 PDF 인쇄에
 - 슬라이드 크기: **12192000 × 6858000 EMU** (13.333in × 7.5in).
 - **1px = 9525 EMU** (1280px × 9525 = 12192000). 변환식: `EMU = round(px × 9525)`.
 - 폰트: `pt = px × 0.75`, **0.5pt 단위 반올림** (예: 48px→36pt, 20px→15pt, 12px→9pt).
-- `font-family`는 **첫 번째 패밀리명**이 PPTX 폰트명으로 매핑된다.
+- `font-family`는 **첫 번째 패밀리명**이 PPTX 폰트명으로 매핑된다. 해석은 폴백
+  체인을 따른다: **블록 인라인 → `.el-*` 인라인 → `<style>`의 `.el-text`/`body` 규칙**
+  — boilerplate 기본 경로에서 모든 텍스트 run에 폰트명이 반드시 도달한다
+  (미도달 시 PPTX 테마 기본 폰트로 무음 대체되는 것을 막는 규칙).
 - 인라인 style의 `var(--토큰)`은 변환기가 `:root` 값으로 해석한 뒤 매핑한다.
 
 ## 3. 요소별 변환 상세
 
 ### .el-text → 텍스트박스
 - 블록(h1~h3/p/li)마다 문단 생성. `li`는 네이티브 불릿(buChar "•", 들여쓰기 0.25in).
+- **리스트는 1단만 허용** — `li` 안의 `ul/ol` 중첩은 변환 오류(exit 2, §4 오류 정책).
+  하위 항목은 문단 재구성 또는 장표 분할로 해소한다.
 - 인라인 `b/strong`→bold, `em/i`→italic, `span`의 color/font-weight/font-size→run 스타일.
 - text-align→문단 정렬, line-height(배수 또는 px)→line_spacing.
 - 텍스트박스 내부 여백 0, word_wrap 켬. 기본 크기(인라인 미지정 시):
@@ -55,7 +60,8 @@ python-pptx의 도형·텍스트 모델로 재현할 수 없거나 PDF 인쇄에
 ### .el-table → PPTX 표
 - `tr`/`td·th` 격자 그대로. `thead th` = 헤더 행 bold.
 - 셀 인라인 style: `background(-color)`→셀 채우기, `color`→글자색, `text-align`→정렬,
-  `font-size`→크기(미지정 시 `.el-table` 인라인 값, 기본 14px).
+  `font-size`→크기(미지정 시 `.el-table` 인라인 값, 기본 18px). 표 셀도 본문
+  최소 크기 규칙(18px — html-spec §7, lint 체크 14 ERROR)을 그대로 따른다.
 - **colspan/rowspan 미지원** — 발견 시 변환 오류. 셀을 분해해 설계하라.
 - 표 테두리는 PPTX 테마 기본값을 따른다(셀 CSS 테두리는 이관되지 않음 — 시각 잔차로
   사람 게이트 ④에서 확인).
@@ -69,8 +75,9 @@ python-pptx의 도형·텍스트 모델로 재현할 수 없거나 PDF 인쇄에
 ## 4. 오류 정책
 
 파싱 집합(.el-text/.el-image/.el-shape/.el-table/aside.notes) 외 직계 요소, 좌표 누락,
-외부 URL 이미지, colspan/rowspan 발견 시: **오류 목록을 전부 출력하고 exit 2, PPTX를
-저장하지 않는다.** 부분 변환물은 검증을 오염시킨다.
+외부 URL 이미지, colspan/rowspan, 중첩 리스트(li 안의 ul/ol) 발견 시: **오류 목록을
+전부 출력하고 exit 2, PPTX를 저장하지 않는다.** 부분 변환물은 검증을 오염시킨다.
+해석 불가 구조의 무음 통과·근사 변환 금지 — 무음 오염이 조기 실패보다 나쁘다.
 
 ## 5. `--image-slides` 옵션 (100% 비주얼 모드)
 
@@ -96,4 +103,8 @@ python-pptx의 도형·텍스트 모델로 재현할 수 없거나 PDF 인쇄에
 
 - 텍스트박스 줄바꿈 위치가 브라우저와 1~2자 다를 수 있다 (폰트 메트릭 차이).
 - 표 테두리 스타일·불릿 마커 위치의 미세 차이.
+- `.el-image` 비율 불일치: 브라우저는 `object-fit: contain`으로 레터박스 처리하지만
+  PPTX는 지정 좌표(w×h)로 스트레치한다 — 원본 비율 = 배치 비율을 맞추는 것이 원칙.
+- 폰트 패밀리는 폴백 체인(§2)으로 run까지 이관되지만, PPTX를 여는 기기에 해당
+  폰트가 없으면 대체 폰트로 렌더된다 (시스템 폰트 스택만 허용하는 이유 — 금지 9항).
 - 이 잔차는 Evaluator가 채점하지 않고 critique.md "사람 게이트 확인 항목"으로 이관한다.

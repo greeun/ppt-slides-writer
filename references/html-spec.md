@@ -62,7 +62,7 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 
 | 클래스 | 태그 | 변환 결과 | 규칙 |
 |---|---|---|---|
-| `.el-text` | div | 텍스트박스 | 내부 허용: `h1~h3`/`p`/`ul·ol·li`, 인라인 `b/strong/em/span(color·font-weight·font-size)`. 폰트 크기·색·정렬은 인라인 style(또는 `.el-text` 인라인 상속) |
+| `.el-text` | div | 텍스트박스 | 내부 허용: `h1~h3`/`p`/`ul·ol·li`(**리스트 1단만 — 중첩 시 변환기 exit 2**), 인라인 `b/strong/em/span(color·font-weight·font-size)`. 폰트 패밀리·크기·색·정렬은 인라인 style(또는 `.el-text` 인라인 상속). font-family 미지정 시 변환기가 `<style>`의 `.el-text`/`body` 규칙 값을 폴백으로 적용한다(conversion-rules §2) |
 | `.el-image` | img | picture | `src`는 로컬 상대 경로. 원본 해상도 ≥ 배치 px(권장 2배) |
 | `.el-shape` | div | 사각형 도형 | 단색 fill·border만. `border-radius>0`이면 라운드 사각형. `transform: rotate(Ndeg)` 단독 허용. 텍스트는 가급적 `.el-text`로 분리 |
 | `.el-table` | table | PPTX 표 | `thead th` = 헤더 행(bold). 셀 인라인 style로 배경·색·정렬. colspan/rowspan 미지원 |
@@ -75,11 +75,13 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 
 **불릿 규칙**: `ul`은 `list-style-position: outside; padding-left: 28px`로 마커를
 표시한다. `li::before` 장식은 금지 CSS 6항이다. PPTX에서는 네이티브 불릿(buChar)으로
-변환된다.
+변환된다. **리스트 중첩 금지(1단만)** — `li` 안의 `ul/ol`은 변환기가 오류(exit 2)로
+거부한다. 하위 항목이 필요하면 문단 재구성 또는 장표 분할로 해소한다.
 
 ## 7. 분량·타이포 규칙
 
-- 장당 본문 6줄 이내, 불릿 3~5개 (체크 19 — ERROR).
+- 장당 본문 6줄 이내, 불릿 3~5개 (체크 19 — 6줄·5개 초과 시 ERROR. 불릿 하한 3개는
+  권장치로 기계 검출하지 않으며 Evaluator가 판단한다).
 - 최소 폰트: 본문 18px, 캡션·출처 12px (체크 14 — ERROR).
 - 캡션·출처는 `.el-text source` 또는 `.el-text caption` 클래스를 붙인다 —
   lint가 12~17px를 허용하는 유일한 예외이자, 수치 출처 요구(체크 15)의 충족 요소다.

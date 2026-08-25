@@ -269,7 +269,8 @@ def main():
         "|---|---|---|",
     ]
     for no, status, msg in sorted(results, key=lambda x: x[0]):
-        lines.append(f"| {no} | {status} | {msg.replace('|', '\\|')} |")
+        esc = msg.replace("|", "\\|")  # f-string 내 백슬래시는 Python <3.12 SyntaxError
+        lines.append(f"| {no} | {status} | {esc} |")
     lines += ["", "> FAIL 존재 시 P0로 수정 후 재변환·재검증한다. 전체 통과 전 최종 게이트 진입 금지."]
     os.makedirs(os.path.dirname(os.path.abspath(args.report)) or ".", exist_ok=True)
     with open(args.report, "w", encoding="utf-8") as f:

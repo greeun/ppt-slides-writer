@@ -9,7 +9,9 @@
   - 폰트 pt = px x 0.75 (0.5pt 반올림). font-family는 첫 번째 패밀리명.
   - 파싱 대상: section.slide 직계의 .el-text / .el-image / .el-shape / .el-table
     + aside.notes. 이외 요소 발견 시 오류 목록 출력 후 exit 2.
+  - .el-text 리스트는 1단만 허용 — li 안의 ul/ol 중첩은 오류(exit 2).
   - 인라인 style의 var(--토큰)은 <style> :root 값으로 해석한다.
+  - font-family 폴백 체인: 블록 인라인 → .el-* 인라인 → <style>의 .el-text/body 규칙.
   - --image-slides: headless Chrome으로 장당 2x PNG 캡처 → full-bleed 이미지 슬라이드
     (100% 비주얼, 텍스트 편집 불가). 이때도 노트는 이관한다.
 
@@ -42,6 +44,7 @@ ALIGN_MAP = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER,
 NAMED_COLORS = {"white": "#ffffff", "black": "#000000"}
 
 errors = []
+default_family = None  # main()이 <style>의 .el-text/body 규칙에서 추출 — 폰트 폴백 체인 최하단
 
 
 def emu(px_val):
@@ -121,6 +124,27 @@ def first_font_family(value):
         return None
     first = value.split(",")[0].strip().strip("'\"")
     return first or None
+
+
+def doc_default_family(style_text, root_vars):
+    """<style> 규칙에서 문서 기본 font-family 추출 (.el-text 규칙 우선, 다음 body 규칙).
+
+    인라인 미지정 시 브라우저 캐스케이드가 적용하는 폰트를 PPTX run에도 도달시킨다
+    — 폴백 최하단 (conversion-rules §2)."""
+    found = {}
+    for m in re.finditer(r"([^{}]+)\{([^}]*)\}", style_text):
+        sel = m.group(1)
+        fam = parse_style(m.group(2)).get("font-family")
+        if not fam:
+            continue
+        fam = first_font_family(resolve_vars(fam, root_vars))
+        if not fam or fam.startswith("var("):
+            continue
+        if ".el-text" in sel:
+            found["el-text"] = fam
+        elif any(tok.strip() == "body" for tok in sel.split(",")):
+            found["body"] = fam
+    return found.get("el-text") or found.get("body")
 
 
 def geometry(st, section_idx, kind):
@@ -205,7 +229,7 @@ def block_ctx(block, el_style, root_vars):
     st = merged_style(block, root_vars, base=el_style)
     size = px(st.get("font-size")) or DEFAULT_FONT_PX.get(block.name, 18)
     color = parse_color(st.get("color"))
-    family = first_font_family(st.get("font-family"))
+    family = first_font_family(st.get("font-family")) or default_family
     bold = st.get("font-weight") in ("bold", "600", "700", "800", "900") \
         or block.name in ("h1", "h2", "h3")
     align = ALIGN_MAP.get(st.get("text-align", "").strip())
@@ -231,6 +255,15 @@ def add_text_element(slide, el, idx, root_vars):
     if not geo:
         return
     l, t, w, h = geo
+    # 중첩 리스트는 blocks 수집이 중첩 li를 이중 방문해 문단을 오염시킨다 —
+    # colspan과 동일한 오류 정책으로 거부 (conversion-rules §4, 부분 변환물 금지)
+    for lst in el.find_all(["ul", "ol"]):
+        anc = lst.find_parent(["li", "ul", "ol"])
+        if anc is not None:
+            errors.append(
+                f"S{idx} .el-text: 중첩 리스트 미지원 — <{lst.name}>이 <{anc.name}> 내부에 있음. "
+                "리스트는 1단만 허용(html-spec §6) — 문단 재구성 또는 장표 분할로 해소할 것.")
+            return
     box = slide.shapes.add_textbox(emu(l), emu(t), emu(w), emu(h))
     tf = box.text_frame
     tf.word_wrap = True
@@ -303,9 +336,12 @@ def add_shape_element(slide, el, idx, root_vars):
         tf.word_wrap = True
         tf.text = text
         fs = px(st.get("font-size")) or 18
+        fam = first_font_family(st.get("font-family")) or default_family
         for para in tf.paragraphs:
             for run in para.runs:
                 run.font.size = pt_from_px(fs)
+                if fam:
+                    run.font.name = fam
                 c = parse_color(st.get("color"))
                 if c:
                     run.font.color.rgb = c
@@ -329,7 +365,7 @@ def add_table_element(slide, el, idx, root_vars):
                 return
     gframe = slide.shapes.add_table(len(rows), ncols, emu(l), emu(t), emu(w), emu(h))
     table = gframe.table
-    table_fs = px(st.get("font-size")) or 14
+    table_fs = px(st.get("font-size")) or 18  # 미지정 시 본문 최소 크기(html-spec §7)와 동일
     for ri, r in enumerate(rows):
         cells = r.find_all(["td", "th"])
         for ci in range(ncols):
@@ -338,6 +374,7 @@ def add_table_element(slide, el, idx, root_vars):
                 continue
             src_cell = cells[ci]
             cst = merged_style(src_cell, root_vars)
+            fam = first_font_family(cst.get("font-family") or st.get("font-family")) or default_family
             cell.text = re.sub(r"\s+", " ", src_cell.get_text(" ", strip=True))
             bg = parse_color(cst.get("background-color") or cst.get("background"))
             if bg is not None:
@@ -349,6 +386,8 @@ def add_table_element(slide, el, idx, root_vars):
                     para.alignment = al
                 for run in para.runs:
                     run.font.size = pt_from_px(px(cst.get("font-size")) or table_fs)
+                    if fam:
+                        run.font.name = fam
                     if src_cell.name == "th" or cst.get("font-weight") in ("bold", "600", "700"):
                         run.font.bold = True
                     c = parse_color(cst.get("color"))
@@ -428,6 +467,8 @@ def main():
         sys.exit(2)
     style_text = "\n".join(s.get_text() for s in soup.find_all("style"))
     root_vars = parse_root_vars(style_text)
+    global default_family
+    default_family = doc_default_family(style_text, root_vars)
 
     # .slide 기본 배경 (CSS 규칙에서 추출, 섹션 인라인이 우선)
     default_bg = None

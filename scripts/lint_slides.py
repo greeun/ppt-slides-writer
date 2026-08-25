@@ -561,7 +561,8 @@ def main():
         "|---|---|---|",
     ]
     for no, level, msg in sorted(lint.findings, key=lambda x: (x[0], x[1])):
-        lines.append(f"| {no} | {level} | {msg.replace('|', '\\|')} |")
+        esc = msg.replace("|", "\\|")  # f-string 내 백슬래시는 Python <3.12 SyntaxError
+        lines.append(f"| {no} | {level} | {esc} |")
     if not lint.findings:
         lines.append("| - | INFO | 지적 사항 없음 — 체크 1~20 전체 통과 |")
     lines += ["", "> ERROR는 스프린트 핸드오프 전 반드시 0으로 만든다. WARN은 Evaluator가 판단한다."]
