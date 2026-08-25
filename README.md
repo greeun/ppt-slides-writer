@@ -54,7 +54,7 @@ Claude Code 세션에서 발표자료 제작을 요청하면 스킬이 활성화
 
 ```
 slides-work/<deck-slug>/
-├── spec.md  design-system.md  storyline.md
+├── spec.md  design-system.md  storyline.md  pattern-spec.md
 ├── sprint_contract.md  generator_report.md  critique.md  design_memo.md  handoff.md
 ├── status.md
 ├── deck.html  assets/  fragments/
@@ -110,7 +110,7 @@ Planner / Generator / Evaluator는 **각각 별도 Agent 호출**로 파견되�
 
 **File Handoff Contract** — 허용되는 통신 파일: `spec.md`, `design-system.md`,
 `storyline.md`, `sprint_contract.md`, `generator_report.md`, `critique.md`,
-`design_memo.md`, `handoff.md`, `lint_report.md`, `verify_report.md`, `status.md`.
+`design_memo.md`, `handoff.md`, `lint_report.md`, `verify_report.md`, `status.md`, `pattern-spec.md`.
 
 ### 핵심 원칙
 
@@ -207,14 +207,15 @@ Simplified로 전환한다면 제거 1순위는 스프린트 분해와 `sprint_c
 | `SKILL.md` | 에이전트 동작의 단일 원천 |
 | `workflows/01`~`07` | 단계별 실행 절차 |
 | `references/html-spec.md` | HTML 중간 렌더 사양 (캔버스·data-role·el-* 계약) |
-| `references/conversion-rules.md` | 금지 CSS 12항 + px→EMU + 요소별 변환 상세 |
-| `references/design-rules.md` | 디자인 시스템 규칙, 템플릿 리듬, 룰 승격 |
-| `references/information-architecture.md` | 정보설계 원칙 (spine·micro-flow·bridge) |
+| `references/conversion-rules.md` | 금지 CSS 12항 + px→EMU + 요소별 변환 상세 + 시각 잔차(제목 폭 안전 계수) |
+| `references/design-rules.md` | 디자인 시스템 규칙, 템플릿 리듬, 룰 승격, §9 콘텐츠→시각 유형 매핑 사전 |
+| `references/information-architecture.md` | 정보설계 원칙 (spine·micro-flow·bridge), 역할 enum 19종 의미, §2-1 기본 10장 골격 |
 | `references/rubric.md` | 루브릭 5기준 + verdict logic |
 | `references/*-prompt.md` | Planner / Generator / Evaluator 파견 프롬프트 |
 | `references/evaluator-calibration.md` | 기준별 1/3/5점 앵커 + 운영 앵커 누적 |
-| `templates/` | `design-system.md`, `storyline.md`, `slide-boilerplate.html` |
-| `scripts/lint_slides.py` | 기계 lint 체크 1~20 |
+| `references/changelog.md` | 버전별 변경 이력 (SemVer) |
+| `templates/` | `design-system.md`, `storyline.md`, `pattern-spec.md`(병렬 스프린트 시각 프레임 정본), `slide-boilerplate.html` |
+| `scripts/lint_slides.py` | 기계 lint 체크 1~20 (`--partial` 조각 모드, 제목 폭 안전 계수 WARN) |
 | `scripts/html2pptx.py` | 네이티브 PPTX 변환기 (`--image-slides` 옵션) |
 | `scripts/html2pdf.sh` | headless Chrome PDF 인쇄 |
 | `scripts/verify_conversion.py` | 변환 충실도 검증 21~26 |
@@ -242,4 +243,4 @@ Simplified로 전환한다면 제거 1순위는 스프린트 분해와 `sprint_c
 
 ## Version
 
-`1.1.0`
+`1.1.0` — 변경 이력은 `references/changelog.md`.

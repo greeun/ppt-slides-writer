@@ -27,7 +27,7 @@ import struct
 import sys
 import tempfile
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pypdf import PdfReader
@@ -157,6 +157,8 @@ def main():
         for i, section in enumerate(sections):
             stext = slide_all_text(prs.slides[i])
             for node in section.find_all(string=True):
+                if isinstance(node, Comment):
+                    continue  # HTML 주석은 렌더되지 않는다 — 텍스트 손실 대조 대상 아님
                 parent_names = [p.name for p in node.parents]
                 if "aside" in parent_names or "style" in parent_names or "script" in parent_names:
                     continue

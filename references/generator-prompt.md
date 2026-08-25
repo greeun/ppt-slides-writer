@@ -19,7 +19,10 @@ Evaluator가 lint·변환 검증 재실행과 루브릭 채점으로 당신의 �
    함께 읽는다: {WORK_DIR}/design-system.md (동결본),
    {SKILL_DIR}/references/information-architecture.md,
    {SKILL_DIR}/references/html-spec.md, {SKILL_DIR}/references/conversion-rules.md,
-   {SKILL_DIR}/references/design-rules.md.
+   {SKILL_DIR}/references/design-rules.md (§9 콘텐츠→시각 유형 매핑 사전 포함).
+   병렬 조각 Generator로 파견된 경우 {WORK_DIR}/pattern-spec.md (Evaluator가 "병렬
+   파견 승인"한 시각 프레임 정본)를 추가로 읽고, 여기 없는 시각 유형은 만들지 않는다
+   — generator_report.md에 "패턴 미정의: <유형>"으로 신고한다.
 2. 작업 전에 이번 스프린트의 SPRINT CONTRACT를 협상한다:
    - {WORK_DIR}/sprint_contract.md 에 기록:
      (a) 이번 스프린트에 만들 산출물 (장표 번호·역할 목록 포함)
@@ -35,17 +38,26 @@ Evaluator가 lint·변환 검증 재실행과 루브릭 채점으로 당신의 �
    b. HTML 스프린트: 승인된 storyline.md만을 원천으로,
       {SKILL_DIR}/templates/slide-boilerplate.html + references/html-spec.md 사양대로
       장표 묶음(3~5장)을 빌드한다. design-system.md 토큰을 :root CSS 변수로 주입한다.
-      삽화·인포그래픽은 image-gen 스킬, 구조도·플로우는 diagram-builder 스킬을
-      사용한다 (부재 시 폴백: 단색 플레이스홀더 도형+라벨 또는 .el-shape/.el-text
-      박스-선 직접 구현 — design-rules.md §7).
+      **네이티브 우선**: 차트·도식·표는 .el-shape/.el-text/.el-table로 직접 구현한다
+      (유형은 design-rules.md §9 사전). image-gen은 삽화·사진풍 비주얼에 한정하고,
+      diagram-builder는 네이티브 박스-화살표로 안 되는 복잡 구조도에만 쓴다 (부재 시
+      폴백: 단색 플레이스홀더 도형+라벨 — 차트·도식은 폴백이 곧 기본 경로다).
+      S2(첫 HTML 스프린트) 종료 시 {SKILL_DIR}/templates/pattern-spec.md 서식으로
+      {WORK_DIR}/pattern-spec.md 를 실측 좌표로 작성해 함께 제출한다 — 이후 병렬
+      스프린트의 조각 Generator는 Evaluator가 승인한 이 문서만 보고 장표를 만든다.
    c. 병렬 생성 시 후처리 패스 필수: {WORK_DIR}/fragments/ 조각(NN.html, 섹션 1개씩)을
       deck.html로 조립한 뒤 전 장표 패턴 통일(팔레트·여백 리듬·라벨 표기·데이터
-      시각화 스타일·radius 계층)을 단일 패스로 점검·수정한다.
-      후처리 없이 READY_FOR_QA 금지.
+      시각화 스타일·radius 계층 — pattern-spec.md §8 체크리스트)을 단일 패스로
+      점검·수정한다. 후처리 없이 READY_FOR_QA 금지.
+      조각 단독 lint는 `--partial` 로 실행한다(체크 1·2·16 생략 — 조립 후 전체 lint가
+      판정. 조각에 <head>가 없으면 fragments/ 상위 deck.html의 <head>를 자동 적용,
+      다른 위치면 `--wrap-head {WORK_DIR}/deck.html` 지정). 조각은 deck.html의
+      `<!-- APPEND: … -->` 마커 앞에 순서대로 조립한다.
    d. 매 HTML 스프린트(S2 이후 — deck.html 존재) 종료 전 실행:
       python3 {SKILL_DIR}/scripts/lint_slides.py {WORK_DIR}/deck.html \
           {WORK_DIR}/design-system.md {WORK_DIR}/storyline.md
-      → ERROR 0이 될 때까지 자체 수정한다.
+      → ERROR 0이 될 때까지 자체 수정한다. "제목 폭 안전 계수" WARN은 박스 폭 확장·
+      제목 축약·높이 +1줄 중 하나로 해소한다 (conversion-rules.md §7).
    e. 변환 스프린트(S-final):
       python3 {SKILL_DIR}/scripts/html2pptx.py {WORK_DIR}/deck.html {WORK_DIR}/dist/deck.pptx
       bash {SKILL_DIR}/scripts/html2pdf.sh {WORK_DIR}/deck.html {WORK_DIR}/dist/deck.pdf
@@ -61,6 +73,9 @@ Evaluator가 lint·변환 검증 재실행과 루브릭 채점으로 당신의 �
    `<a href="...">`로 감싼다 — PPTX·PDF에서 클릭되고 배포 후 클릭 추적의 유일한 경로다.
 5. sprint_contract.md의 모든 체크를 스스로 통과 확인하기 전에는 절대 완료 선언
    (READY_FOR_QA) 금지.
+6. **보고서 절 단위 저장**: generator_report.md는 끝에 한 번에 쓰지 않는다. 산출물·
+   자체 검증 내역 등 각 절이 끝날 때마다 즉시 파일에 기록한다. 연결이 끊기면 승계
+   세션이 마지막 기록 절 다음부터 재개한다 (handoff.md와 별개 — 부분 저장은 상시 규칙).
 
 방향 전환 규칙 (재시도 시 Strategic Decision):
 매 평가 후 전략적 결정을 내리고 {WORK_DIR}/generator_report.md 최상단에 기록한다:

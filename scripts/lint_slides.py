@@ -3,12 +3,23 @@
 
 사용법:
     python3 lint_slides.py <deck.html> <design-system.md> <storyline.md> \
-        [--report lint_report.md] [--no-render]
+        [--report lint_report.md] [--no-render] \
+        [--partial [--wrap-head deck.html]]
 
 2단계 검사:
   1) 정적 파싱(BeautifulSoup) — 체크 1~20 중 기계 검증분
-  2) 렌더 검사(headless Chrome) — 요소 scrollHeight>clientHeight 오버플로 (체크 4 보강).
+  2) 렌더 검사(headless Chrome) — 요소 scrollHeight>clientHeight 오버플로 (체크 4 보강)
+     + 제목(h1) 폭 안전 계수 WARN (체크 4, 폰트 메트릭 잔차): 마지막 줄 실측 폭 > 박스 폭 × 0.92
+       이면서 박스 높이에 여유 줄(줄 수+1)이 없을 때만 "PPTX N+1줄 위험". 줄바꿈된 제목의
+       첫 줄은 항상 박스에 꽉 차므로 최대 폭이 아니라 마지막 줄 폭을 본다.
      Chrome 부재 시 SKIP 기록 후 경고.
+
+--partial: 조각(fragments/NN.html) 단독 lint. 조립 전에는 성립하지 않는 체크 1(장수)·
+  2(cover/cta)·16(시간 합)을 생략하고 보고서 머리에 "PARTIAL 모드"를 명시한다.
+  조각에 <head>(:root 토큰·기본 스타일)가 없으면 --wrap-head <deck.html> 의 <head>를 씌워
+  검사한다 — 토큰 해석(체크 6·14)과 렌더 검사가 :root·기본 CSS에 의존한다. --wrap-head를
+  생략하면 조각 폴더의 상위 deck.html(fragments/ 규약)을 자동 적용하고, 그것도 없으면
+  렌더 검사를 SKIP한다(절대 배치 CSS 없이는 오버플로 측정이 오탐이므로).
 
 출력: lint_report.md + exit code (ERROR 존재 시 1, 아니면 0).
 의존성: beautifulsoup4
@@ -232,14 +243,28 @@ def has_class_up(el, names, stop):
     return False
 
 
-def run_render_check(deck_path, chrome, lint):
-    """headless Chrome --dump-dom 으로 오버플로 측정."""
-    with open(deck_path, encoding="utf-8") as f:
-        src = f.read()
+TITLE_WIDTH_SAFETY = 0.92  # 제목 폭 안전 계수 — conversion-rules §7 (PPTX 폰트 메트릭 잔차)
+
+
+def wrap_with_head(fragment_src, head_deck_path):
+    """조각(섹션만 있는 HTML)에 deck.html의 <head>를 씌운다 (--wrap-head)."""
+    with open(head_deck_path, encoding="utf-8") as f:
+        head_doc = f.read()
+    m = re.search(r"<head>.*?</head>", head_doc, re.S | re.I)
+    head = m.group(0) if m else "<head></head>"
+    return f'<!DOCTYPE html>\n<html lang="ko">\n{head}\n<body>\n{fragment_src}\n</body>\n</html>\n'
+
+
+def run_render_check(deck_path, chrome, lint, src=None):
+    """headless Chrome --dump-dom 으로 오버플로·제목 폭 측정. src가 있으면 파일 대신 그 문자열을 렌더."""
+    if src is None:
+        with open(deck_path, encoding="utf-8") as f:
+            src = f.read()
     probe = """
 <script>
 window.addEventListener('load', function () {
-  var out = [];
+  var out = [], titles = [];
+  var SAFETY = %s;
   var slides = document.querySelectorAll('section.slide');
   slides.forEach(function (s, i) {
     if (s.scrollHeight > s.clientHeight + 1 || s.scrollWidth > s.clientWidth + 1)
@@ -250,14 +275,42 @@ window.addEventListener('load', function () {
         out.push({slide: i + 1, el: el.className, sh: el.scrollHeight, ch: el.clientHeight,
                   sw: el.scrollWidth, cw: el.clientWidth});
     });
+    s.querySelectorAll('.el-text h1').forEach(function (h) {
+      var box = h.closest('.el-text');
+      var bw = box ? box.clientWidth : h.clientWidth;
+      var bh = box ? box.clientHeight : h.clientHeight;
+      var cs = getComputedStyle(h);
+      var lh = parseFloat(cs.lineHeight);
+      if (!(lh > 0)) lh = parseFloat(cs.fontSize) * 1.2;
+      var range = document.createRange();
+      range.selectNodeContents(h);
+      var rects = range.getClientRects();
+      if (!rects.length) return;
+      // 줄바꿈된 제목은 첫 줄이 항상 박스에 꽉 차므로, 한 줄이 더 생길지는 마지막 줄 폭이 결정한다
+      var lastTop = -Infinity, k;
+      for (k = 0; k < rects.length; k++) if (rects[k].top > lastTop) lastTop = rects[k].top;
+      var l = Infinity, r = -Infinity;
+      for (k = 0; k < rects.length; k++) {
+        if (Math.abs(rects[k].top - lastTop) < 2) {
+          if (rects[k].left < l) l = rects[k].left;
+          if (rects[k].right > r) r = rects[k].right;
+        }
+      }
+      var lw = r - l;
+      var lines = Math.max(1, Math.round(h.getBoundingClientRect().height / lh));
+      var spare = bh >= (lines + 1) * lh - 1;
+      if (bw > 0 && lw > bw * SAFETY && !spare)
+        titles.push({slide: i + 1, text: (h.textContent || '').trim().slice(0, 40),
+                     lw: Math.round(lw), bw: bw, lines: lines, bh: bh, lh: Math.round(lh)});
+    });
   });
   var pre = document.createElement('pre');
   pre.id = '__lint_overflow__';
-  pre.textContent = JSON.stringify(out);
+  pre.textContent = JSON.stringify({overflow: out, titles: titles});
   document.body.appendChild(pre);
 });
 </script>
-"""
+""" % TITLE_WIDTH_SAFETY
     if "</body>" in src:
         injected = src.replace("</body>", probe + "</body>", 1)
     else:
@@ -275,13 +328,21 @@ window.addEventListener('load', function () {
         if not m:
             lint.add(4, "WARN", "렌더 검사 결과를 파싱하지 못했다 (Chrome dump-dom 출력 이상). 정적 검사만 반영됨.")
             return
-        data = json.loads(html_mod.unescape(m.group(1)) or "[]")
-        for item in data:
+        data = json.loads(html_mod.unescape(m.group(1)) or "{}")
+        for item in data.get("overflow", []):
             lint.add(4, "ERROR",
                      f"렌더 오버플로 — S{item['slide']} `{item['el']}`: "
                      f"scroll {item.get('sw','?')}x{item.get('sh','?')} > client {item.get('cw','?')}x{item.get('ch','?')}")
-        if not data:
+        if not data.get("overflow"):
             lint.add(4, "INFO", "렌더 오버플로 검사 통과 (Chrome 측정).")
+        for item in data.get("titles", []):
+            limit = item["bw"] * TITLE_WIDTH_SAFETY
+            n = item["lines"]
+            lint.add(4, "WARN",
+                     f"제목 폭 안전 계수 — S{item['slide']} h1 \"{item['text']}\"({n}줄): 마지막 줄 실측 폭 {item['lw']}px > "
+                     f"박스 폭 {item['bw']}px × {TITLE_WIDTH_SAFETY} = {limit:.0f}px, 박스 높이 {item['bh']}px < "
+                     f"{n + 1}줄분({(n + 1) * item['lh']}px) → PPTX {n + 1}줄 위험(폰트 메트릭 차이). "
+                     "박스 폭 확장·제목 축약 또는 박스 높이 +1줄 확보 (conversion-rules §7).")
     except Exception as e:  # noqa: BLE001 — lint는 진단 도구, 렌더 실패는 WARN으로 강등
         lint.add(4, "WARN", f"렌더 검사 실행 실패({e}). 정적 검사만 반영됨.")
     finally:
@@ -296,6 +357,10 @@ def main():
     ap.add_argument("storyline")
     ap.add_argument("--report", default=None)
     ap.add_argument("--no-render", action="store_true", help="렌더 검사(headless Chrome) 생략")
+    ap.add_argument("--partial", action="store_true",
+                    help="조각(fragments/NN.html) 단독 lint — 체크 1·2·16 생략, 보고서에 PARTIAL 모드 명시")
+    ap.add_argument("--wrap-head", default=None, metavar="DECK_HTML",
+                    help="--partial 시 조각에 <head>가 없으면 이 deck.html의 <head>(:root·기본 CSS)를 씌워 검사")
     args = ap.parse_args()
 
     deck_dir = os.path.dirname(os.path.abspath(args.deck))
@@ -308,26 +373,47 @@ def main():
     with open(args.storyline, encoding="utf-8") as f:
         story_src = f.read()
 
+    lint = Linter()
+    wrapped = False
+    wrap_source = None
+    render_skip_reason = None
+    if args.partial and not re.search(r"<head>", html_src, re.I):
+        head_src = args.wrap_head
+        if not head_src:
+            # fragments/NN.html 규약 → 상위 폴더의 deck.html을 자동 적용
+            cand = os.path.normpath(os.path.join(deck_dir, os.pardir, "deck.html"))
+            if os.path.isfile(cand):
+                head_src = cand
+        if head_src:
+            html_src = wrap_with_head(html_src, head_src)
+            wrapped, wrap_source = True, head_src
+        else:
+            render_skip_reason = "PARTIAL — 조각에 <head> 없음·deck.html 미탐지"
+            lint.add(4, "WARN", "PARTIAL: 조각에 <head>(:root 토큰·기본 CSS)가 없고 --wrap-head 미지정·상위 폴더 "
+                                "deck.html 미탐지 — 토큰 해석(체크 6·14) 불완전, 렌더 검사 SKIP(절대 배치 CSS 없이는 "
+                                "오버플로 측정이 오탐). --wrap-head <deck.html> 지정 권장.")
+
     soup = BeautifulSoup(html_src, "html.parser")
     sections = soup.select("section.slide")
     style_text = "\n".join(s.get_text() for s in soup.find_all("style"))
     root_vars = parse_root_vars(style_text)
-    lint = Linter()
 
-    # ---------- 체크 1: 장수 일치 ----------
-    story_slides = re.findall(r"^##\s+S(\d+)\.", story_src, re.M)
-    if len(story_slides) != len(sections):
-        lint.add(1, "ERROR",
-                 f"장수 불일치 — storyline.md {len(story_slides)}장 vs deck.html {len(sections)}섹션.")
     if not sections:
         lint.add(1, "ERROR", "deck.html에 section.slide가 없다.")
 
-    # ---------- 체크 2: 표지·CTA ----------
-    roles = [s.get("data-role", "") for s in sections]
-    if "cover" not in roles:
-        lint.add(2, "ERROR", 'data-role="cover" 섹션이 없다.')
-    if "cta" not in roles:
-        lint.add(2, "ERROR", 'data-role="cta" 섹션이 없다.')
+    if not args.partial:
+        # ---------- 체크 1: 장수 일치 ----------
+        story_slides = re.findall(r"^##\s+S(\d+)\.", story_src, re.M)
+        if len(story_slides) != len(sections):
+            lint.add(1, "ERROR",
+                     f"장수 불일치 — storyline.md {len(story_slides)}장 vs deck.html {len(sections)}섹션.")
+
+        # ---------- 체크 2: 표지·CTA ----------
+        roles = [s.get("data-role", "") for s in sections]
+        if "cover" not in roles:
+            lint.add(2, "ERROR", 'data-role="cover" 섹션이 없다.')
+        if "cta" not in roles:
+            lint.add(2, "ERROR", 'data-role="cta" 섹션이 없다.')
 
     # ---------- 체크 3: data 속성 ----------
     for i, s in enumerate(sections, 1):
@@ -516,18 +602,19 @@ def main():
             if not has_source:
                 lint.add(15, "WARN", f"S{i}: 수치가 있으나 .source(출처) 요소 없음.")
 
-    # ---------- 체크 16: 시간 배분 ----------
-    m_total = re.search(r"발표\s*시간\s*[:：]\s*(\d+(?:\.\d+)?)\s*분", story_src)
-    slide_times = [float(x) for x in re.findall(r"예상\s*시간\s*[:：]\s*(\d+(?:\.\d+)?)\s*분", story_src)]
-    if not m_total:
-        lint.add(16, "WARN", "storyline.md에 '발표 시간: N분' 필드가 없다.")
-    elif not slide_times:
-        lint.add(16, "WARN", "storyline.md에 장별 '예상 시간' 필드가 없다.")
-    else:
-        total = float(m_total.group(1))
-        ssum = sum(slide_times)
-        if total > 0 and abs(ssum - total) > total * 0.10:
-            lint.add(16, "WARN", f"시간 정합 이탈 — 장별 합 {ssum:.1f}분 vs 발표 시간 {total:.0f}분 (±10% 초과).")
+    # ---------- 체크 16: 시간 배분 (PARTIAL 모드는 생략 — 조각에는 전체 합이 없다) ----------
+    if not args.partial:
+        m_total = re.search(r"발표\s*시간\s*[:：]\s*(\d+(?:\.\d+)?)\s*분", story_src)
+        slide_times = [float(x) for x in re.findall(r"예상\s*시간\s*[:：]\s*(\d+(?:\.\d+)?)\s*분", story_src)]
+        if not m_total:
+            lint.add(16, "WARN", "storyline.md에 '발표 시간: N분' 필드가 없다.")
+        elif not slide_times:
+            lint.add(16, "WARN", "storyline.md에 장별 '예상 시간' 필드가 없다.")
+        else:
+            total = float(m_total.group(1))
+            ssum = sum(slide_times)
+            if total > 0 and abs(ssum - total) > total * 0.10:
+                lint.add(16, "WARN", f"시간 정합 이탈 — 장별 합 {ssum:.1f}분 vs 발표 시간 {total:.0f}분 (±10% 초과).")
 
     # ---------- 체크 17: 발표자 노트 ----------
     for i, s in enumerate(sections, 1):
@@ -574,10 +661,13 @@ def main():
 
     # ---------- 렌더 검사 ----------
     render_status = "SKIP(--no-render)"
-    if not args.no_render:
+    if render_skip_reason:
+        render_status = f"SKIP({render_skip_reason})"
+    elif not args.no_render:
         chrome = find_chrome()
         if chrome:
-            run_render_check(os.path.abspath(args.deck), chrome, lint)
+            run_render_check(os.path.abspath(args.deck), chrome, lint,
+                             src=html_src if wrapped else None)
             render_status = f"실행됨 ({chrome})"
         else:
             lint.add(4, "WARN", "headless Chrome 미탐지 — 렌더 오버플로 검사 SKIP. "
@@ -587,7 +677,11 @@ def main():
     # ---------- 보고서 ----------
     n_err = len(lint.errors())
     n_warn = len([f for f in lint.findings if f[1] == "WARN"])
-    lines = ["# Lint Report — deck.html", ""]
+    partial_label = "PARTIAL 모드 — 체크 1·2·16 생략"
+    if args.partial:
+        lines = [f"# Lint Report — {os.path.basename(args.deck)} ({partial_label})", ""]
+    else:
+        lines = ["# Lint Report — deck.html", ""]
     if lint.safety_flags:
         lines += ["## [안전 플래그] 민감정보 — 오케스트레이터 STOP 게이트 에스컬레이션", ""]
         lines += [f"- {f}" for f in lint.safety_flags]
@@ -596,6 +690,11 @@ def main():
         f"- 대상: `{args.deck}` (섹션 {len(sections)}개)",
         f"- 결과: **ERROR {n_err} / WARN {n_warn}**",
         f"- 렌더 검사: {render_status}",
+    ]
+    if args.partial:
+        lines.append(f"- 모드: **{partial_label}** — 조각 단독 lint. 장수·cover/cta·시간 합은 조립 후 전체 lint에서 판정한다."
+                     + (f" (<head>를 `{wrap_source}`에서 씌움{'' if args.wrap_head else ' — 자동 탐지'})" if wrapped else ""))
+    lines += [
         "",
         "| # | 레벨 | 내용 |",
         "|---|---|---|",
@@ -609,7 +708,8 @@ def main():
     with open(report_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
-    print(f"lint: ERROR {n_err} / WARN {n_warn} → {report_path}")
+    mode = f"lint[{partial_label}]" if args.partial else "lint"
+    print(f"{mode}: ERROR {n_err} / WARN {n_warn} → {report_path}")
     sys.exit(1 if n_err else 0)
 
 

@@ -21,7 +21,8 @@ LLM은 평범한 작업을 자신 있게 칭찬하는 경향이 있다. 당신�
 
 워크플로우:
 1. 읽는다: {WORK_DIR}/spec.md, sprint_contract.md, generator_report.md,
-   storyline.md, deck.html, lint_report.md (+ 변환 스프린트면 dist/verify_report.md).
+   storyline.md, deck.html, lint_report.md (+ 변환 스프린트면 dist/verify_report.md,
+   + 병렬 스프린트면 {WORK_DIR}/pattern-spec.md 와 fragments/ 조각별 lint 보고서).
    채점 기준: {SKILL_DIR}/references/rubric.md — 이 파일의 verdict logic을 그대로
    적용한다. 채점 전 {SKILL_DIR}/references/evaluator-calibration.md 의 기준별
    1/3/5점 앵커를 읽고 점수를 앵커에 정박시킨다.
@@ -29,6 +30,19 @@ LLM은 평범한 작업을 자신 있게 칭찬하는 경향이 있다. 당신�
    sprint_contract.md에 구체적 수정 조항을 써서 반려한다.
 3. 제출된 작업에 대해 계약의 모든 체크 + 아래 적대적 프로브 9종을 전부 실행한다.
 4. 증거를 채집한다. "~일 것이다"라고 서술하지 말고 관찰하라.
+5. **절 단위 부분 저장**: critique.md는 끝에 한 번에 쓰지 않는다. 프로브 결과·Rubric
+   표·Blocking Issues 등 각 절이 끝날 때마다 즉시 파일에 기록한다. 연결이 끊기면
+   재파견된 Evaluator는 critique.md의 마지막 기록 절 다음부터 재개하고, 이미 기록된
+   절은 재실행하지 않고 인용만 한다 (재개 시 파일 최상단에 "재개: <절 이름>부터" 1줄).
+
+병렬 파견 승인 판정 (S2 종료 시 {WORK_DIR}/pattern-spec.md 가 제출된 경우):
+{SKILL_DIR}/templates/pattern-spec.md 서식 기준으로 다음을 검사하고 critique.md에
+`## 병렬 파견 판정: 승인 | 반려` 절을 쓴다 — ① §0 변환기 사실 표 존재 ② 제목 프레임
+좌표가 deck.html S1~S{n} 실측과 일치(인라인 style 대조) ③ §4 색 의미 라벨이
+design-system.md 원문과 동일(재정의·확장 0건) ④ §5 spine 첫 등장 표가 storyline.md
+spine 표와 일치 ⑤ §7 배정표에 병렬 대상 전 장표가 있고 리듬 검증(3연속 없음)이 서술됨
+⑥ 좌표가 캔버스·안전 여백 규칙 안. 빈 `{…}` 슬롯이 남아 있으면 반려. 반려 시 조각
+Generator 파견 금지.
 
 적대적 프로브 9종:
 1. **AI-slop lint**: {SKILL_DIR}/resources/ai-slop-checklist.md (SSOT — 이 파일 기준
@@ -147,6 +161,9 @@ Verdict logic (rubric.md와 동일):
 
 ## Recommended Next Focus
 [다음 반복에서 Generator가 우선할 것]
+
+## 병렬 파견 판정: 승인 | 반려 (S2 종료 시 pattern-spec.md 제출된 경우에만)
+[위 ①~⑥ 검사 결과 — 반려면 어느 항목이 왜 미달인지 슬롯·좌표를 인용]
 
 캘리브레이션 규칙:
 - 전 기준 ≥4가 나오면: ① 까다로운 시니어 프레젠테이션 코치 ② 경쟁 발표자

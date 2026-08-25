@@ -55,10 +55,10 @@ Planner–Generator–Evaluator 3역할 **Full tier**로 구동한다.
 
 ```
 slides-work/<deck-slug>/
-├── spec.md  design-system.md  storyline.md
+├── spec.md  design-system.md  storyline.md  pattern-spec.md  # pattern-spec = 병렬 시각 프레임 정본
 ├── sprint_contract.md  generator_report.md  critique.md  design_memo.md  handoff.md
 ├── status.md                      # 단계 상태 (⬜🔄✅ — 내부 문서 전용, 장표 내 이모지 금지)
-├── deck.html  assets/  fragments/ # fragments/ = 병렬 생성 조각
+├── deck.html  assets/  fragments/ # fragments/ = 병렬 생성 조각 (+ 조각별 lint_NN.md)
 ├── lint_report.md
 └── dist/  deck.pptx  deck.pdf  verify_report.md
 ```
@@ -66,13 +66,16 @@ slides-work/<deck-slug>/
 **File Handoff Contract (파일 기반 통신만 허용)**: 역할 간 통신은 다음 파일로만 한다 —
 `spec.md`, `design-system.md`, `storyline.md`, `sprint_contract.md`,
 `generator_report.md`, `critique.md`, `design_memo.md`, `handoff.md`,
-`lint_report.md`, `verify_report.md`, `status.md`.
+`lint_report.md`, `verify_report.md`, `status.md`, `pattern-spec.md`(S2 종료 시
+Generator 작성 → Evaluator "병렬 파견 승인" → 조각 Generator 입력).
 
 ## 오케스트레이터 활성화 플로우
 
 모든 사용자 게이트는 오케스트레이터(이 세션)가 AskUserQuestion으로 직접 수행한다.
 각 단계 완료 시 status.md를 갱신한다(⬜🔄✅). 역할 프롬프트의 `{WORK_DIR}`(작업 폴더
 절대 경로)·`{SKILL_DIR}`(이 스킬 루트 절대 경로)는 파견 시점에 실제 경로로 치환한다.
+**파견 프롬프트는 design-system.md 토큰 의미를 재정의·확장하지 않는다** (색 의미 지정
+금지, 참조만 — 위반 시 Evaluator C2 의미 라벨 붕괴로 FAIL이 돌아온다).
 
 1. **5질문 인테이크** (→ workflows/01): 청중 / 목적 / 발표 시간 / CTA / 톤.
    사용자 요청에 이미 답이 있으면 해당 질문은 생략하고 확인만 한다.
@@ -92,8 +95,10 @@ slides-work/<deck-slug>/
    **[사람 게이트 ②: 스토리라인 승인]** 장별 역할·키 메시지·시간 배분 표 제시,
    승인 전 HTML 빌드 금지(STOP 게이트).
 6. **HTML 스프린트 루프** (→ workflows/04): 장표 묶음(3~5장)별 Generator 빌드
-   (병렬 시 fragments/ 조립 + 후처리 패턴 통일) → lint_slides.py → Evaluator critique
-   → REFINE/PIVOT 판단 → 반복. 스프린트당 반복 상한 5~15회 범위(하한 고정 금지).
+   (병렬 시 S2 종료에 pattern-spec.md 작성 → Evaluator 병렬 파견 승인 → 조각 빌드 →
+   `--partial` 조각 lint → fragments/ 조립 + 후처리 패턴 통일) → lint_slides.py →
+   Evaluator critique → REFINE/PIVOT 판단 → 반복. 스프린트당 반복 상한 5~15회
+   범위(하한 고정 금지).
 7. **[사람 게이트 ③: HTML 렌더 게이트]** (→ workflows/05): deck.html 브라우저 확인
    안내 → 피드백을 범위 지정 수정으로 반영(콘텐츠 변경은 storyline.md 먼저), 수정 후
    lint 재실행 → 승인까지 반복.
@@ -160,6 +165,12 @@ lint(기계) → LLM 리뷰(Evaluator + slide-reviewer 연계) → 사람 게이
 ## 생태계 연계
 
 안내 문구 패턴: `→ 이 작업은 <skill-name> 스킬을 사용한다. (부재 시: <폴백 동작>)`
+
+**네이티브 우선 전략**: 차트·도식·표는 `.el-shape`/`.el-text`/`.el-table`로 직접
+구현하는 것이 기본 경로다(유형 선택은 `references/design-rules.md` §9 사전) —
+PPTX에서 편집 가능하고 수정 비용이 없다. image-gen은 삽화·사진풍 비주얼에 한정한다.
+따라서 **image-gen API 키 부재 시의 폴백(도형+라벨)은 차트·도식에서는 기본 경로와
+동일**하며, 삽화만 플레이스홀더로 남아 게이트 ④에서 수동 삽입을 안내한다.
 
 | 단계 | 연계 스킬 | 호출 방식·전달물 | 부재 시 폴백(축소 동작) |
 |---|---|---|---|
@@ -239,18 +250,20 @@ Evaluator 검증)은 "현행 모델에서 스프린트 분해와 상시 Evaluato
 | `workflows/06-conversion.md` | PPTX/PDF 변환 + 검증 21~26 |
 | `workflows/07-delivery.md` | 최종 게이트 ④, CTA 점검, 리드마그넷, 민감정보 최종 확인 |
 | `references/html-spec.md` | HTML 중간 렌더 사양 (캔버스·data-role·el-* 계약) |
-| `references/conversion-rules.md` | 금지 CSS 12항 + px→EMU + 요소별 변환 상세 |
-| `references/design-rules.md` | 디자인 시스템 규칙, 템플릿 리듬, 의미 라벨, 룰 승격 |
-| `references/information-architecture.md` | 정보설계 원칙 (spine·micro-flow·bridge) |
+| `references/conversion-rules.md` | 금지 CSS 12항 + px→EMU + 요소별 변환 상세 + 시각 잔차(제목 폭 안전 계수) |
+| `references/design-rules.md` | 디자인 시스템 규칙, 템플릿 리듬, 의미 라벨, 룰 승격, §9 콘텐츠→시각 유형 매핑 사전 |
+| `references/information-architecture.md` | 정보설계 원칙 (spine·micro-flow·bridge), 역할 enum 19종 의미, §2-1 기본 10장 골격 |
 | `references/rubric.md` | 루브릭 5기준 + verdict logic + 2차 점검 렌즈 |
 | `references/planner-prompt.md` | Planner 파견 프롬프트 |
 | `references/generator-prompt.md` | Generator 파견 프롬프트 (Strategic Decision 포함) |
 | `references/evaluator-prompt.md` | Evaluator 파견 프롬프트 (프로브 9종 + Tuning) |
 | `references/evaluator-calibration.md` | 기준별 1/3/5점 앵커 15개 + 운영 앵커 누적 |
+| `references/changelog.md` | 버전별 변경 이력 (SemVer) |
 | `templates/design-system.md` | 디자인 토큰 템플릿 |
 | `templates/storyline.md` | 스토리라인 설계서 템플릿 (lint 파싱 계약 포함) |
+| `templates/pattern-spec.md` | 병렬 스프린트 시각 프레임 정본 템플릿 (변환기 사실·제목 프레임·유형별 좌표 슬롯·배정표·조립 체크리스트) |
 | `templates/slide-boilerplate.html` | deck.html 뼈대 (@page, .slide, .el-*) |
-| `scripts/lint_slides.py` | 기계 lint 체크 1~20 (정적 + Chrome 렌더 검사) |
+| `scripts/lint_slides.py` | 기계 lint 체크 1~20 (정적 + Chrome 렌더 검사, `--partial` 조각 모드, 제목 폭 WARN) |
 | `scripts/html2pptx.py` | 네이티브 PPTX 변환기 (python-pptx, --image-slides 옵션) |
 | `scripts/html2pdf.sh` | headless Chrome PDF 인쇄 |
 | `scripts/verify_conversion.py` | 변환 충실도 검증 21~26 |

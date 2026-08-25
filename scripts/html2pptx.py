@@ -27,7 +27,7 @@ import subprocess
 import sys
 import tempfile
 
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -183,6 +183,8 @@ def add_runs(paragraph, node, ctx):
     """인라인 노드 순회 → run 생성. b/strong=bold, em/i=italic, span(color/font-weight),
     a[href]=하이퍼링크(run.hyperlink — PPTX·PDF 양쪽에서 클릭 가능)."""
     for child in node.children:
+        if isinstance(child, Comment):
+            continue  # Comment는 NavigableString의 하위 타입 — run으로 새지 않게 차단
         if isinstance(child, NavigableString):
             text = re.sub(r"\s+", " ", str(child))
             if not text.strip():

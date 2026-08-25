@@ -35,7 +35,7 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 
 ## 3. 자기완결 (체크 5 — ERROR)
 
-- 외부 CDN·웹폰트·원격 이미지 금지. `http(s)://` 참조(src/href/@import/CSS url()) 0건.
+- 외부 CDN·웹폰트·원격 이미지 금지. `http(s)://` 참조(src/@import/CSS url()/`<link href>`) 0건 — 단 `.el-text` 안의 `<a href>` 하이퍼링크(§6, conversion-rules §3)는 예외.
 - 이미지는 `assets/` **로컬 상대 경로** — PPTX 변환 시 동일 파일을 재사용한다.
 - CSS는 `<style>` 블록 인라인. 폰트는 시스템 폰트 스택만(`@font-face` 금지).
 
@@ -92,9 +92,17 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 ## 8. 병렬 생성 (fragments)
 
 - 조각은 `fragments/NN.html` — 파일당 `<section class="slide">` 1개씩.
-- 조립: 조각을 순서대로 deck.html의 `<body>`에 삽입한 뒤 **후처리 패턴 통일 패스**
-  (팔레트·여백 리듬·라벨 표기·데이터 시각화 스타일·radius 계층)를 단일 패스로 수행한다.
-  후처리 없이 lint·핸드오프 진행 금지 (workflows/04 참조).
+- **조립 마커**: boilerplate가 `</body>` 직전에 `<!-- APPEND: … -->` 주석 1줄을 둔다.
+  조각의 `<section>`을 이 마커 **앞**에 순서대로 삽입한다. 마커는 조립 후 남겨도 무해하다
+  (HTML 주석은 lint·변환기·검증 21~26 모두 무시). 마커가 없는 deck.html이면 `</body>`
+  직전이 삽입 위치다.
+- 조립 후 **후처리 패턴 통일 패스**(팔레트·여백 리듬·라벨 표기·데이터 시각화 스타일·
+  radius 계층)를 단일 패스로 수행한다. 후처리 없이 lint·핸드오프 진행 금지 (workflows/04).
+- 조각의 시각 프레임(제목 좌표·유형별 규격)은 작업 폴더 `pattern-spec.md`
+  (`templates/pattern-spec.md` 서식)가 정본이다. 조각 단독 lint는
+  `lint_slides.py --partial`(체크 1·2·16 생략)로 한다 — 조각에 `<head>`가 없으면
+  `fragments/`의 상위 deck.html `<head>`를 자동으로 씌우고(`--wrap-head`로 지정 가능),
+  둘 다 없으면 렌더 검사는 SKIP된다.
 
 ## 9. 금지 CSS
 
