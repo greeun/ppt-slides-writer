@@ -25,7 +25,8 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 - `data-role` — 아래 enum 중 하나:
   ```
   cover | agenda | section-divider | problem | insight | solution |
-  evidence | comparison | case | roadmap | team | financials | cta | appendix
+  concept | process | evidence | comparison | case | tactics | caveats |
+  application | roadmap | team | financials | cta | appendix
   ```
   enum 확장은 storyline.md의 "역할 확장 정의"에 역할을 추가한 경우만 허용
   (lint는 enum 외 값을 WARN 처리).
@@ -43,7 +44,8 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 - design-system.md의 토큰 표를 `:root` CSS 변수로 주입한다:
   `--color-*`, `--font-*`, `--radius-*`, `--space-*`.
 - lint가 design-system.md의 HEX 목록을 파싱해 사용 색을 대조한다 (체크 6 — ERROR,
-  무채색 계열 예외).
+  무채색 계열 예외). design-system.md §6.1 "금지 색"에 적힌 HEX는 팔레트에서 제외되고
+  사용 시 ERROR다. §6.1 "금지 표현"의 문구는 장표 텍스트에서 발견 시 체크 20 ERROR.
 - **인라인 style 안에서 `var(--토큰)` 사용 가능** — lint와 변환기가 `:root` 값으로
   해석한다. 토큰에 없는 색을 raw HEX로 몰래 쓰는 것이 금지 대상이다.
 
@@ -62,7 +64,7 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 
 | 클래스 | 태그 | 변환 결과 | 규칙 |
 |---|---|---|---|
-| `.el-text` | div | 텍스트박스 | 내부 허용: `h1~h3`/`p`/`ul·ol·li`(**리스트 1단만 — 중첩 시 변환기 exit 2**), 인라인 `b/strong/em/span(color·font-weight·font-size)`. 폰트 패밀리·크기·색·정렬은 인라인 style(또는 `.el-text` 인라인 상속). font-family 미지정 시 변환기가 `<style>`의 `.el-text`/`body` 규칙 값을 폴백으로 적용한다(conversion-rules §2) |
+| `.el-text` | div | 텍스트박스 | 내부 허용: `h1~h3`/`p`/`ul·ol·li`(**리스트 1단만 — 중첩 시 변환기 exit 2**), 인라인 `b/strong/em/span(color·font-weight·font-size)/a[href]`. 폰트 패밀리·크기·색·정렬은 인라인 style(또는 `.el-text` 인라인 상속). font-family 미지정 시 변환기가 `<style>`의 `.el-text`/`body` 규칙 값을 폴백으로 적용한다(conversion-rules §2) |
 | `.el-image` | img | picture | `src`는 로컬 상대 경로. 원본 해상도 ≥ 배치 px(권장 2배) |
 | `.el-shape` | div | 사각형 도형 | 단색 fill·border만. `border-radius>0`이면 라운드 사각형. `transform: rotate(Ndeg)` 단독 허용. 텍스트는 가급적 `.el-text`로 분리 |
 | `.el-table` | table | PPTX 표 | `thead th` = 헤더 행(bold). 셀 인라인 style로 배경·색·정렬. colspan/rowspan 미지원 |

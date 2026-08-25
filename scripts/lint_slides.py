@@ -27,7 +27,8 @@ from bs4 import BeautifulSoup, Tag
 
 ROLE_ENUM = {
     "cover", "agenda", "section-divider", "problem", "insight", "solution",
-    "evidence", "comparison", "case", "roadmap", "team", "financials",
+    "concept", "process", "evidence", "comparison", "case", "tactics",
+    "caveats", "application", "roadmap", "team", "financials",
     "cta", "appendix",
 }
 
@@ -56,6 +57,11 @@ SENSITIVE_PATTERNS = [
     ("이메일", re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")),
     ("계좌번호 추정", re.compile(r"\b\d{3,6}-\d{2,6}-\d{4,8}\b")),
     ("민감 키워드", re.compile(r"(대외비|사외비|Confidential|급여|연봉|임금|견적\s*단가|단가표)", re.I)),
+    # 미공개 전략·로드맵 (기밀 전략 문서 유출 방지 — 단어 '로드맵' 단독은 오탐이므로 수식어와 결합)
+    ("미공개 전략·로드맵", re.compile(
+        r"((미공개|비공개|내부\s*전용|공개\s*예정|출시\s*전|unreleased|internal[\s-]*only)"
+        r"[^\n]{0,12}(로드맵|전략|계획|기능|출시|roadmap|strateg\w*|plan\w*|feature\w*)"
+        r"|(로드맵|전략)[^\n]{0,6}(미공개|비공개|내부\s*전용))", re.I)),
 ]
 
 NUMERIC_CLAIM_RE = re.compile(r"\d[\d,\.]*\s*(%|원|억|조|만|배|건|명|개사|달러|\$|₩)")
@@ -68,6 +74,28 @@ def norm_hex(h):
     if len(h) == 3:
         h = "".join(c * 2 for c in h)
     return "#" + h
+
+
+def parse_negative_list(ds_src):
+    """design-system.md 6.1 네거티브 리스트에서 금지 색 HEX·금지 표현을 뽑는다.
+
+    서식(templates/design-system.md 고정): `- 금지 색: #RRGGBB, #RRGGBB | 없음`
+                                          `- 금지 표현: 문구1, 문구2 | 없음`
+    절이 없으면 빈 값 — 구버전 design-system.md와 호환된다."""
+    colors, phrases = set(), []
+    for m in re.finditer(r"^\s*[-*]?\s*금지\s*색\s*[:\uff1a]\s*(.+)$", ds_src, re.M):
+        colors |= {norm_hex(h) for h in HEX_RE.findall(m.group(1))}
+    for m in re.finditer(r"^\s*[-*]?\s*금지\s*표현\s*[:\uff1a]\s*(.+)$", ds_src, re.M):
+        raw = m.group(1).strip()
+        if raw in ("없음", "-", "N/A"):
+            continue
+        if raw.startswith("{") and raw.endswith("}"):
+            continue  # 미기입 템플릿 플레이스홀더
+        for part in re.split(r"[,\u00b7/]", raw):
+            part = part.strip().strip("`'\"{}")
+            if part and part not in ("없음", "-"):
+                phrases.append(part)
+    return colors, phrases
 
 
 def hex_rgb(h):
@@ -338,8 +366,13 @@ def main():
     for m in re.finditer(r"url\(\s*['\"]?(https?://[^)'\"]+)", style_text, re.I):
         lint.add(5, "ERROR", f"CSS 외부 url() 참조: {m.group(1)}")
 
+    # ---------- 네거티브 리스트 파싱 (design-system.md §6.1) ----------
+    banned_colors, banned_phrases = parse_negative_list(ds_src)
+
     # ---------- 색 수집 (체크 6·9용) ----------
-    palette = {norm_hex(h) for h in HEX_RE.findall(ds_src)}
+    # 금지 색 HEX는 design-system.md 본문에 등장하므로 팔레트에서 명시적으로 뺀다
+    # (빼지 않으면 금지 색이 "등재된 색"으로 통과한다).
+    palette = {norm_hex(h) for h in HEX_RE.findall(ds_src)} - banned_colors
     used_colors = set()
     all_inline_styles = []
     for s in sections:
@@ -356,9 +389,11 @@ def main():
             r, g, b = (int(x) for x in m.groups())
             used_colors.add("#{:02x}{:02x}{:02x}".format(r, g, b))
 
-    # ---------- 체크 6: HEX 준수 ----------
+    # ---------- 체크 6: HEX 준수 + 브랜드 금지 색 ----------
     for c in sorted(used_colors):
-        if c not in palette and not is_grayscale(c):
+        if c in banned_colors:
+            lint.add(6, "ERROR", f"브랜드 금지 색 사용: {c} (design-system.md §6.1 네거티브 리스트).")
+        elif c not in palette and not is_grayscale(c):
             lint.add(6, "ERROR", f"팔레트 외 색 사용: {c} (design-system.md 미등재, 무채색 아님).")
 
     # ---------- 체크 7: 폰트 ≤3 ----------
@@ -526,11 +561,16 @@ def main():
             if n > 5:
                 lint.add(19, "ERROR", f"S{i}: 불릿 {n}개 — 5개 초과.")
 
-    # ---------- 체크 20: 격식체 ----------
+    # ---------- 체크 20: 표현 (격식체 + 브랜드 금지 표현) ----------
     for i, s in enumerate(sections, 1):
-        for m in INFORMAL_RE.finditer(s.get_text(" ")):
+        stext = s.get_text(" ")
+        for m in INFORMAL_RE.finditer(stext):
             lint.add(20, "WARN", f"S{i}: 비격식 종결어미 의심 `{m.group(0).strip()}` — 격식체(합쇼체) 확인 필요.")
             break  # 장당 1회 보고
+        low = stext.lower()
+        for phrase in banned_phrases:
+            if phrase.lower() in low:
+                lint.add(20, "ERROR", f"S{i}: 브랜드 금지 표현 `{phrase}` 사용 (design-system.md §6.1).")
 
     # ---------- 렌더 검사 ----------
     render_status = "SKIP(--no-render)"

@@ -10,6 +10,7 @@
   - 파싱 대상: section.slide 직계의 .el-text / .el-image / .el-shape / .el-table
     + aside.notes. 이외 요소 발견 시 오류 목록 출력 후 exit 2.
   - .el-text 리스트는 1단만 허용 — li 안의 ul/ol 중첩은 오류(exit 2).
+  - .el-text 안의 <a href>는 PPTX run 하이퍼링크로 이관된다 (CTA 클릭 추적 경로).
   - 인라인 style의 var(--토큰)은 <style> :root 값으로 해석한다.
   - font-family 폴백 체인: 블록 인라인 → .el-* 인라인 → <style>의 .el-text/body 규칙.
   - --image-slides: headless Chrome으로 장당 2x PNG 캡처 → full-bleed 이미지 슬라이드
@@ -179,7 +180,8 @@ def set_bullet(paragraph, on):
 
 
 def add_runs(paragraph, node, ctx):
-    """인라인 노드 순회 → run 생성. b/strong=bold, em/i=italic, span(color/font-weight)."""
+    """인라인 노드 순회 → run 생성. b/strong=bold, em/i=italic, span(color/font-weight),
+    a[href]=하이퍼링크(run.hyperlink — PPTX·PDF 양쪽에서 클릭 가능)."""
     for child in node.children:
         if isinstance(child, NavigableString):
             text = re.sub(r"\s+", " ", str(child))
@@ -199,6 +201,10 @@ def add_runs(paragraph, node, ctx):
                 run = paragraph.add_run()
                 run.text = "\v"
                 continue
+            if child.name == "a":
+                href = (child.get("href") or "").strip()
+                if href:
+                    sub["hyperlink"] = href
             if child.name == "span":
                 st = merged_style(child, sub["root_vars"])
                 c = parse_color(st.get("color"))
@@ -214,6 +220,8 @@ def add_runs(paragraph, node, ctx):
 
 def _apply_run_style(run, ctx):
     run.font.size = pt_from_px(ctx["size_px"])
+    if ctx.get("hyperlink"):
+        run.hyperlink.address = ctx["hyperlink"]
     if ctx.get("bold"):
         run.font.bold = True
     if ctx.get("italic"):

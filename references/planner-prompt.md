@@ -55,7 +55,14 @@ Hard rules:
 [data-role 시퀀스로 기술한 장표 역할 흐름. 예:
 cover → problem → insight → solution → evidence → comparison → roadmap → cta
 + 각 역할이 수행할 설득 기능 1줄
-+ 시나리오 spine: 어떤 수치·주장이 어느 장표에서 처음 등장해 어디서 재등장하는지]
++ 시나리오 spine: 어떤 수치·주장이 어느 장표에서 처음 등장해 어디서 재등장하는지
+
+구조 지정이 없으면 information-architecture.md §2-1의 기본 10장 골격
+(cover → problem → solution → concept → process → case → tactics → caveats →
+application → cta)에서 출발해 청중·목적에 맞게 변형한다. 그대로 복사하지 말고
+뺀 역할·더한 역할의 이유를 1줄씩 남긴다.
+**caveats(한계·유의사항) 장표는 10장 이상 덱에서 기본 포함**하고, 뺐다면 그 이유를
+명시한다 — 한계를 밝히지 않은 덱은 질의응답에서 무너진다.]
 
 ## 5. 산출물
 [각 산출물: 이름 / 설명 / 품질 기준 / 검증 방법

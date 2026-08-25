@@ -43,7 +43,7 @@
 - 예상 시간: {N}분
 
 ## S2. {제목}
-- 역할(data-role): {agenda | section-divider | problem | insight | solution | evidence | comparison | case | roadmap | team | financials | cta | appendix}
+- 역할(data-role): {agenda | section-divider | problem | insight | solution | concept | process | evidence | comparison | case | tactics | caveats | application | roadmap | team | financials | cta | appendix}
 - 키 메시지: {…}
 - 부제: {…}
 - 본문 원고:

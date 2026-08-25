@@ -41,6 +41,9 @@ python-pptx의 도형·텍스트 모델로 재현할 수 없거나 PDF 인쇄에
 - **리스트는 1단만 허용** — `li` 안의 `ul/ol` 중첩은 변환 오류(exit 2, §4 오류 정책).
   하위 항목은 문단 재구성 또는 장표 분할로 해소한다.
 - 인라인 `b/strong`→bold, `em/i`→italic, `span`의 color/font-weight/font-size→run 스타일.
+- `a[href]`→run 하이퍼링크(`run.hyperlink.address`). PPTX·PDF 양쪽에서 클릭된다 —
+  CTA·부록 URL은 텍스트로 적지 말고 `<a>`로 감싼다 (배포 후 클릭 추적의 유일한 경로,
+  workflows/07). 링크 색·밑줄은 PPTX 테마 기본값을 따른다(시각 잔차).
 - text-align→문단 정렬, line-height(배수 또는 px)→line_spacing.
 - 텍스트박스 내부 여백 0, word_wrap 켬. 기본 크기(인라인 미지정 시):
   h1 40px / h2 32px / h3 24px / p·li 18px — 단, **인라인 명시가 원칙**이다.
