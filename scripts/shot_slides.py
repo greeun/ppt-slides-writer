@@ -11,6 +11,9 @@
 출력: <out-dir>/S01.png … 장표당 1장 (1280x720 × scale).
 의존성: headless Chrome (탐색 순서는 lint_slides.py와 동일: $CHROME_BIN → macOS 앱 →
 google-chrome → chromium). Chrome 부재 시 안내 후 exit 1.
+
+주의: macOS 등에서 headless Chrome이 stderr로 CVDisplayLink 류 오류 로그를 다량 출력할 수
+있다 — 캡처 자체는 정상이며, 성공 판정은 exit code와 "캡처 완료 N장" 메시지를 기준으로 한다.
 """
 
 import argparse

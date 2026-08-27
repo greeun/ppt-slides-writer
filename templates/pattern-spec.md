@@ -18,7 +18,7 @@
 | `font-family`·`font-size`·`color`·`line-height`·`text-align`은 **블록 인라인 → `.el-*` 인라인** 순으로만 읽는다(`<style>`은 폰트 폴백 최하단만) | 모든 `.el-text`에 이 속성을 인라인 명시. `line-height`는 배수(1.2~1.5) |
 | lint 체크 19는 `.caption`/`.source`가 아닌 `.el-text`의 `p`/`li`를 전부 본문 줄로 센다(장당 ≤6, 리스트 `li` ≤5). 리스트 1단 제한은 변환기가 exit 2로 거부한다 | 부제 `p` 1줄이 항상 포함되므로 **본문 실질 예산 5줄**. 대형 수치·단계 제목·합계 문장은 `h2`/`h3`로 둔다 |
 | lint 체크 14: `.caption`/`.source`만 12~17px 허용, 그 외 ≥18px | 차트 주석·라벨은 `.el-text caption`. 단 **spine 첫 등장 수치·주장 문장은 ≥18px `p`/`li`/`h2`/`h3`**(캡션 금지 — §5) |
-| `.el-table`은 PPTX 기본 표 스타일이 적용되고 열 폭 **균등**, 행 높이 **표 높이 ÷ 행 수 균등**, 셀 padding·테두리는 PPTX 기본값. `colspan`/`rowspan`은 변환 오류 | 모든 `th`/`td`에 `background-color`·`color`·`text-align`·`height` 인라인 명시(미지정 셀은 PPTX 기본 밴딩으로 나온다). HTML도 `table-layout: fixed` + 전 셀 동일 `height` |
+| `.el-table` 열 너비의 단일 원천은 `<colgroup><col style="width:Npx">`(열 수만큼, 합 = 표 width) — **없으면 lint 체크 4 ERROR**. 행 높이는 `<tr style="height:Npx">`(합 = 표 height, 불일치 WARN). 셀 padding(12px 16px)·수직 정렬(middle)·구분선(헤더 하단 2px·행 하단 1px)은 boilerplate CSS가 정본이고 변환기가 같은 값을 PPTX 셀 여백·앵커·테두리로 이관한다(테마 기본 격자·밴딩은 끈다). `colspan`/`rowspan`은 변환 오류 | 표는 `table-layout: fixed` + colgroup 필수(§6.4 예시 형태). 모든 `th`/`td`에 `background-color`·`color`·`text-align` 인라인 명시. 셀 `height`·`width` 인라인은 쓰지 않는다 — 행 높이는 `<tr>`, 열 너비는 `<col>`이 정한다 |
 | `.el-shape`는 사각형/둥근 사각형만. 원은 `border-radius = min(w,h)/2`로 근사. `transform`은 `rotate(Ndeg)` 단독만 허용 | 마일스톤 점 = 정사각형 + radius 절반. 화살표·판정 기호는 **글리프 문자**(`→` U+2192, `○△×—`)를 `.caption`으로 — 이모지 블록(U+2600~27BF, 1F000~) 문자 금지(lint 체크 12) |
 | `word-break: keep-all`은 HTML 렌더 전용(PPTX는 글자 단위 줄바꿈) | 줄바꿈 1~2자 차이는 기지 잔차(conversion-rules §7). 텍스트 박스 높이 = 줄 수 × font-size × line-height + 4px 여유 |
 | lint 렌더 검사: `.el-*`에서 `scrollHeight > clientHeight + 2`면 ERROR. h1은 **마지막 줄** 실측 폭 > 박스 폭 × 0.92이면서 박스 높이에 여유 줄(줄 수+1)이 없을 때 WARN(PPTX N+1줄 위험) | 1줄 제목은 박스 폭을 실측 폭 ÷ 0.92 이상으로 잡거나 축약한다. 2줄 제목은 마지막 줄이 짧으면 발화하지 않는다 — 마지막 줄까지 꽉 차면 박스 높이를 +1줄(§1.1 `{2줄 높이}` = 3줄분) 확보한다 |
@@ -28,11 +28,16 @@
 
 캔버스 1280×720. 안전 여백 `--space-margin` 64 → 콘텐츠 x 64~1216(폭 1152). 블록 간격 32, 요소 간격 16.
 
-### 1.1 제목 프레임 — 2줄 제목용 (기본)
+**덱 기본 프레임 선택(§1.1 기입 전에 먼저 한다)**: §1.2의 추정 산식(제목 px × 자수)으로 대표
+제목 3~4개의 줄 수를 계산해 **덱 단위 기본 프레임(1줄/2줄)을 먼저 고른다**. 발표덱의 문장형
+제목은 2줄이 많지만, 읽는 덱(리드마그넷)은 36px × 1152 폭에서 대부분 1줄로 수렴한다 —
+"2줄이 기본"은 가정일 뿐이므로 덱마다 뒤집어 확인한다.
+
+### 1.1 제목 프레임 — 2줄 제목용
 
 | 요소 | 좌표 (left, top, width×height) | 태그·스타일(토큰명) |
 |---|---|---|
-| 상단 밴드(선택) | `.el-shape` (0, 0, 1280×{밴드 높이}) | `{--color-primary}`, radius 0 |
+| 상단 밴드(선택) | `.el-shape` (0, 0, 1280×{밴드 높이}) | `{--color-primary}`, radius 0. 본문 프레임에서 생략하고 cover·cta 등 특수 프레임 전용(§1.4)으로 써도 된다 — 어느 쪽인지 여기 명시 |
 | 제목(주장) | `.el-text` (64, **{제목 top}**, {W}×{2줄 높이}) | `<h1>` `--font-heading` {제목 px}/700 lh {1.2~1.3} `{제목 색 토큰}`. W ≤ 1152 — 두 줄이 어절 경계에서 균형 있게 나뉘도록 줄인다(스크린샷으로 확인). left·top은 전 본문 장표 고정 |
 | 부제(키 메시지) | `.el-text` (64, **{부제 top·2줄}**, 1152×{높이}) | `<p>` `--font-heading` {부제 px}/500 lh 1.4 `{부제 색 토큰}`. storyline `부제` 문자열 그대로 |
 | 콘텐츠 존 | y **{존 시작·2줄} ~ {존 끝}** (높이 {…}), x 64~1216 | — |
@@ -54,11 +59,17 @@ y **{존 시작·1줄} ~ {존 끝}**. 출처·푸터·밴드는 1.1과 동일. *
 | 좌 4 : 우 6 | x 64 ~ {…} ({폭}) | x {…} ~ 1216 ({폭}) |
 | 좌 6 : 우 4 | x 64 ~ {…} ({폭}) | x {…} ~ 1216 ({폭}) |
 | 전면 | x 64 ~ 1216 (1152) | — |
+| 자유 분할(선택) | x {실측 시작} ~ {실측 끝} ({폭}) — {용도} | x {실측 시작} ~ {실측 끝} ({폭}) — {용도} |
+
+비율 슬롯에 안 들어가는 분할(예: 차트 존 + 우측 대형 수치)은 자유 분할 행에 **실측 x 범위**로
+직접 기입한다 — 슬롯이 없다고 즉석 발명하거나 비율 슬롯에 억지로 끼우지 않는다.
 
 ### 1.4 특수 프레임
 
 - cover(S1): S2에서 확정한 좌표를 그대로 옮겨 적는다 — {…}.
 - section-divider / cta: 가운데 정렬 허용 장표. 제목 (64, {top}, 1152×{h}) center, 부제·제안 문장·연락처 좌표 {…}.
+  cta 장표의 **CTA 버튼(도형 + 링크 텍스트)은 §6.14 규격**으로 만들고 좌표를 여기 옮겨 적는다 —
+  리드마그넷형은 필수 요소다.
 - appendix 태그(선택): `.el-shape` ({x}, {y}, {w}×{h}) `{surface 토큰}` + 1px `{primary 토큰}` 테두리 radius {소형}
   + `.caption` 13px 700 center "부록 A"~. 제목 top은 그대로.
 
@@ -105,6 +116,10 @@ design-system.md의 의미 라벨 열을 **그대로 옮겨 적는다**. 여기�
 이 덱에서 쓰는 유형만 채운다. 산정식은 공통이고 `{…}` 슬롯이 덱별 값이다. 색은 §4 표의 자리만 쓴다.
 전부 **`.el-shape` 단색 + `.el-text caption`**(네이티브)으로 만든다 — 이미지 차트 금지.
 
+**§6의 색 토큰 표기는 예시다 — §4의 design-system 의미 라벨이 항상 우선한다.** 예: 이 덱의
+의미 라벨에서 "개선·긍정 수치"가 primary면 6.9의 `{accent 토큰}` 표기 자리에 primary를 쓴다.
+예시 표기를 그대로 옮겨 의미 라벨과 어긋나게 쓰면 C2 위반(의미 라벨 붕괴)이다.
+
 ### 6.1 수평 막대 (구성 분해·손실 분해·인원 분포)
 - 행 피치 {56}, 막대 높이 {32}, radius 0. 행 라벨 `.caption` 18px (L, y+2, {라벨 폭}×28) 좌측, 막대 x = L + {라벨 폭 + 10},
   값 라벨 `.caption` 18px 700 의미색 (막대 끝 + 12, y+2, 110×28).
@@ -127,12 +142,44 @@ design-system.md의 의미 라벨 열을 **그대로 옮겨 적는다**. 여기�
 - 실측 슬롯: {장 | L, W, y | 구간 값 → 폭}.
 
 ### 6.4 판단표 `.el-table`
-- 인라인: `left/top/width/height` + `font-family: var(--font-body); font-size: 18px;`. 열 폭 균등 — `<col>`·셀 `width` 금지.
-- 모든 `th`/`td` 인라인 `background-color`·`color`·`text-align: left`·`height: R px`. th = `{primary 토큰}` 배경 + `{surface 토큰}` 글자.
-  강조 열 = `{accent 토큰}` 700. 손실 셀 = `{warning 토큰}`(수치 셀만).
-- 행 높이 R(전 행 동일, 표 height = R × 행 수): 1줄 셀 {48} / 2줄 {64} / 3줄 {88}. 셀 줄 수 한계 ≈ (열 폭 − 20) ÷ 18 한글 자.
-  초과 시 괄호 설명을 빼 라벨화 — 폰트 축소 금지(체크 14). 표로 안 들어가면 카드 그리드(6.5)로 투영.
+- 인라인: `left/top/width/height` + `font-family: var(--font-body); font-size: 18px;`.
+- **열 너비 = `<colgroup><col style="width:Npx">`**(열 수만큼, 합 = 표 width — 없으면 lint 체크 4
+  ERROR, §0). **행 높이 = `<tr style="height:Npx">`**(전 행, 합 = 표 height). 셀 `height`·`width`
+  인라인 금지 — 행·열 치수의 단일 원천은 `<tr>`·`<col>`이다.
+- 모든 `th`/`td` 인라인 `background-color`·`color`·`text-align: left`. th = `{primary 토큰}` 배경 +
+  `{surface 토큰 또는 #FFFFFF}` 글자. 강조 열 = `{§4 의미 라벨 토큰}` 700. 손실 셀 = `{warning 토큰}`(수치 셀만).
+- 행 높이 R(전 행 동일 권장, 표 height = R × 행 수): 1줄 셀 {56} / 2줄 {80} / 3줄 {104}
+  — boilerplate 셀 padding 상하 24px 포함 값(18px 줄 25.2px + 24 = 49.2 → 56 여유). 셀 줄 수
+  한계 ≈ (열 폭 − 32) ÷ 18 한글 자(좌우 padding 32px 제외). 초과 시 괄호 설명을 빼 라벨화 —
+  폰트 축소 금지(체크 14). 표로 안 들어가면 카드 그리드(6.5)로 투영.
 - **보존 규칙**: spine 재등장 수치는 압축 시에도 삭제 금지. 조사·괄호 설명만 줄인다.
+- 예시 — lint 체크 4를 통과하는 형태. 좌표·열 수·행 수·토큰·문구만 덱 값으로 바꾼다:
+
+  ```html
+  <table class="el-table" style="left: 64px; top: 180px; width: 1152px; height: 168px; font-family: var(--font-body); font-size: 18px;">
+    <colgroup><col style="width: 384px"><col style="width: 384px"><col style="width: 384px"></colgroup>
+    <thead>
+      <tr style="height: 56px">
+        <th style="background-color: var(--color-primary); color: #FFFFFF; text-align: left;">기준</th>
+        <th style="background-color: var(--color-primary); color: #FFFFFF; text-align: left;">현행</th>
+        <th style="background-color: var(--color-primary); color: #FFFFFF; text-align: left;">제안</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="height: 56px">
+        <td style="background-color: #FFFFFF; color: var(--color-text); text-align: left;">운영 부담</td>
+        <td style="background-color: #FFFFFF; color: var(--color-text); text-align: left;">수작업 취합</td>
+        <td style="background-color: #FFFFFF; color: var(--color-accent); font-weight: 700; text-align: left;">자동 집계로 대체</td>
+      </tr>
+      <tr style="height: 56px">
+        <td style="background-color: #FFFFFF; color: var(--color-text); text-align: left;">도입 판단</td>
+        <td style="background-color: #FFFFFF; color: var(--color-text); text-align: left;">기준 부재</td>
+        <td style="background-color: #FFFFFF; color: var(--color-accent); font-weight: 700; text-align: left;">정형성과 빈도로 판정</td>
+      </tr>
+    </tbody>
+  </table>
+  ```
+
 - 실측 슬롯: {표 | 좌표 | 열×행, 열 폭 | R | 강조 열·손실 셀}.
 
 ### 6.5 카드 그리드
@@ -141,7 +188,11 @@ design-system.md의 의미 라벨 열을 **그대로 옮겨 적는다**. 여기�
   **동폭 3카드는 덱 전체 1회 이하**(design-rules §4) — 어느 장이 소비하는지 §7 배정표에 기록.
 - 지표 카드 내부(x, y, w 기준): 라벨 `.caption` 14px (x+20, y+18, w−40×20) / 수치 `h2` (x+20, y+{40~44}, w−40×{60~80}) /
   강조 줄 `h3` 18px 700 (x+20, y+112, w−40×26) ← spine 첫 등장 수치 자리 / 보조 `.caption` 14px (x+20, y+140, w−40×40) 2줄.
-- 실측 슬롯: {장 | 구성 | 카드 좌표 | 내부 값}.
+- **비지표 변형(병렬 항목 소개 — 적용처·옵션·사례)**: 대형 수치 `h2` 자리를 빼고 —
+  라벨 `.caption` 14px (x+20, y+18, w−40×20) / 항목 제목 `h3` 19px 700 (x+20, y+{46}, w−40×28) /
+  상세 `p` 18px (x+20, y+{84}, w−40×{…}) / 판정·보조 `.caption` 13~14px (x+20, y+{…}, w−40×20).
+  spine 첫 등장 수치가 카드 안에 있으면 ≥18px 자리(제목 h3 또는 상세 p)에 둔다.
+- 실측 슬롯: {장 | 구성(지표|비지표) | 카드 좌표 | 내부 값}.
 
 ### 6.6 수평 타임라인 (기간·로드맵)
 - 레일 `.el-shape` (64, {y}, 1152×2) line. 마일스톤 점 `.el-shape` 16×16 radius 8 at x_i, y−7. 첫 점 {primary}, 이후 {accent}.
@@ -155,15 +206,20 @@ design-system.md의 의미 라벨 열을 **그대로 옮겨 적는다**. 여기�
 - 화살표 `.caption` 28px muted center ({x}, {y}, 96×40) `→`. 화살표로 연결된 흐름 박스는 동폭 3카드 프로브 대상이 아니다.
 - 실측 슬롯: {장 | 박스 좌표 | 화살표 좌표}.
 
-### 6.8 세로 목록 블록 (단계·구성원·항목)
+### 6.8 세로 목록 블록 (단계·구성원·항목·실행 지침)
 - 블록(x, y, w, 피치 P): 상단 룰 `.el-shape` (x, y, w×1) line / 제목 `h3` 19px 700 (x, y+10, w−160×28) /
-  우측 금액(선택) `h3` 22px 700 accent right (x+w−148, y+8, 148×32) / 상세 `p` 18px lh 1.3 (x, y+42, w×(P−46)).
-- 실측 슬롯: {장 | x, w | P, y 시작 | 블록 수}.
+  우측 금액·태그(선택) `h3` 22px 700 right (x+w−148, y+8, 148×32) — 색은 §4 의미 라벨을 따른다
+  (금액·성과 수치는 강조 라벨, 소요 시간 등 중립 정보는 muted) / 상세 `p` 18px lh 1.3 (x, y+42, w×(P−46)).
+- 첫 블록의 상단 룰이 제목 프레임 구분선(§1.1)과 가까우면 이중선 인상을 준다 — 첫 블록 룰은
+  프레임 구분선과 **겸용(생략) 가능**. 겸용 여부를 실측 슬롯에 기록한다.
+- 실측 슬롯: {장 | x, w | P, y 시작 | 블록 수 | 첫 블록 룰 겸용 여부}.
 
 ### 6.9 게이지 바 대비 (before/after)
 - 행 피치 88: 헤더 `.caption` 15px 700 (L, y, 300×22) + 도입 전 라벨 `.caption` 13px (L, y+29, 70×20) · 바 (L+76, y+28, w_before×20)
   `{warning 토큰}` · 값 `.caption` 18px 700 (바 끝 + 10, y+25, 110×26) / 도입 후 라벨 (L, y+55) · 바 (L+76, y+54, w_after×20) `{accent 토큰}`.
-- **스케일**: 행마다 도입 전 = B_max({440}), `w_after = round(after ÷ before × B_max)`, 최소 폭 6. 단위가 다른 행은 같은 단위로 환산.
+- **스케일 — 행별 정규화가 기본**: 행마다 도입 전 = B_max({440}), `w_after = round(after ÷ before × B_max)`,
+  최소 폭 6. 행별 정규화이므로 **행 간 단위 통일은 불필요**하다(시간·건 혼재 허용) — 단위 환산은
+  같은 행 안(도입 전 ↔ 후)이 다른 단위일 때만 한다.
 - 실측 슬롯: {장 | L | 행 y | 값 → 폭}.
 
 ### 6.10 체크 매트릭스 (다항목 비교 — ○△×)
@@ -193,6 +249,19 @@ design-system.md의 의미 라벨 열을 **그대로 옮겨 적는다**. 여기�
   rotate 단독만 허용(금지 4항), 회전 전 박스가 캔버스 안에 있어야 lint 체크 4 통과 — |θ| ≤ 45° 권장(넘으면 노드 배치를 조정).
 - 실측 슬롯: {장 | 노드 y | 선 좌표·θ}.
 
+### 6.14 CTA 버튼 (cta 장표 — 리드마그넷형 필수)
+- 버튼 = `.el-shape` ({x}, {y}, {폭 320~440}×{높이 64~80}) `{§4에서 CTA를 담당하는 의미 라벨 토큰}`
+  radius {대형} + 라벨 `.el-text` (같은 x, y + {(버튼 높이 − 라벨 높이) ÷ 2 근사}, 같은 폭×{라벨 높이})
+  20~22px 700 center `{surface 토큰 또는 #FFFFFF}`. 도형을 먼저 쓰고 텍스트를 겹친다(z-order).
+- 라벨 텍스트는 반드시 `<a href="{CTA URL}">…</a>`로 감싼다 — PPTX run 하이퍼링크·PDF 링크
+  주석으로 이관되는 **배포 후 클릭 추적의 유일한 경로**다(workflows/07). URL에는 UTM 파라미터를
+  부여하고 HTML 원문의 `&`는 `&amp;`로 이스케이프한다(변환기가 원문으로 복원).
+- 링크의 UA 기본 파란 글자·밑줄은 boilerplate의 `.el-text a { color: inherit; text-decoration:
+  none; }`이 차단한다 — 클릭 가능성은 버튼 도형과 행동 동사 문구("데모 신청하기" 등)로 알린다.
+- 보조(선택): URL 문자열 표기 `.caption` 14px center (64, 버튼 하단 + {16}, 1152×24) —
+  PDF 인쇄본에서도 주소를 눈으로 확인할 수 있게 한다.
+- 실측 슬롯: {버튼 좌표 | 라벨 좌표 | href(UTM 포함) | 보조 URL 표기 좌표}.
+
 ## 7. 장별 프레임 배정표 (병렬 대상 전 장표)
 
 | 장 | 역할 | 프레임(1줄/2줄/특수) | 구조 시그니처 | 요소 요약(§6 규격 참조) | 반전 요소 수(≤1) | 본문 줄 예산(부제 포함 ≤6) |
@@ -216,6 +285,7 @@ comparison | case | tactics | caveats | application | roadmap | team | financial
 3. 색: 섹션 내 raw HEX 0건(토큰만), `{warning 토큰}` 텍스트가 손실·위험 수치만인지, 반전 요소 장당 ≤1.
 4. radius 값 집합 ⊆ {design-system 3계층}. 동폭 3카드 = §7 기록 장 1회.
 5. `.caption` 안 종결어미 문장 0건, §5의 첫 등장 수치가 각 장 ≥18px 텍스트에 존재.
-6. 표: 모든 `th`/`td` 인라인 배경·색·높이, `colspan` 0, 셀 폰트 ≥18.
+6. 표: `<colgroup>` 열 너비 합 = 표 width, `<tr>` 높이 합 = 표 height, 모든 `th`/`td` 인라인
+   배경·색·정렬(셀 `height`·`width` 인라인 없음), `colspan` 0, 셀 폰트 ≥18.
 7. 본문 줄 ≤6·`li` ≤5, 장표 안 내부 참조 문자열(spec §/S번호/SP/data-role/micro-flow 라벨) 0건.
 8. `lint_slides.py` 전체 모드 ERROR 0(조립 후 체크 1·2·16 포함) + 제목 폭 WARN 해소 → `html2pptx.py` 스모크 exit 0 → 스크린샷 재생성.

@@ -9,7 +9,7 @@ description: >
   Triggers — EN: "ppt", "pptx", "slide deck", "presentation", "make slides",
   "pitch deck". KO: "발표자료", "슬라이드", "피치덱", "PPT 만들어", "장표 만들어",
   "발표 자료 작성", "슬라이드 만들어", "제안 발표 자료".
-version: 1.3.0
+version: 1.3.1
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion]
 context: fork
 ---

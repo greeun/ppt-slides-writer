@@ -245,4 +245,4 @@ Simplified로 전환한다면 제거 1순위는 스프린트 분해와 `sprint_c
 
 ## Version
 
-`1.3.0` — 변경 이력은 `references/changelog.md`.
+`1.3.1` — 변경 이력은 `references/changelog.md`.

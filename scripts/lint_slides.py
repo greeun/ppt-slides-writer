@@ -694,9 +694,16 @@ def main():
     # ---------- 체크 16: 시간 배분 (PARTIAL 모드는 생략 — 조각에는 전체 합이 없다) ----------
     if not args.partial:
         m_total = re.search(r"발표\s*시간\s*[:：]\s*(\d+(?:\.\d+)?)\s*분", story_src)
+        # 읽는 덱(리드마그넷 등 발표 없는 배포물)은 '발표 시간: 해당 없음(사유)' 표기로 검산을 생략한다
+        # (templates/storyline.md 파싱 계약). '발표 시간: 0분'도 아래 total > 0 가드로 동일하게 통과.
+        # 실제 필드 줄(`- 발표 시간: …`)만 인식한다(줄 앵커 + re.M) — 템플릿 지침 문구(블록쿼트 예시)가
+        # 남은 발표덱에서 '해당 없음' 예시 텍스트가 시간 검산을 조용히 생략시키는 오탐 방지.
+        m_na = re.search(r"^[ \t]*[-*][ \t]*발표\s*시간\s*[:：]\s*해당\s*없음", story_src, re.M)
         slide_times = [float(x) for x in re.findall(r"예상\s*시간\s*[:：]\s*(\d+(?:\.\d+)?)\s*분", story_src)]
-        if not m_total:
-            lint.add(16, "WARN", "storyline.md에 '발표 시간: N분' 필드가 없다.")
+        if m_na:
+            lint.add(16, "INFO", "storyline.md '발표 시간: 해당 없음' 명시 — 읽는 덱(리드마그넷 등)으로 보고 시간 검산을 생략한다.")
+        elif not m_total:
+            lint.add(16, "WARN", "storyline.md에 '발표 시간: N분' 필드가 없다 (읽는 덱은 '발표 시간: 해당 없음'으로 명시한다).")
         elif not slide_times:
             lint.add(16, "WARN", "storyline.md에 장별 '예상 시간' 필드가 없다.")
         else:
