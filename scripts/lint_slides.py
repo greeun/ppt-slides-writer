@@ -440,6 +440,31 @@ def main():
                 lint.add(4, "ERROR",
                          f"S{i} `{el_kind(el)}`: 캔버스(1280x720) 이탈 — left+width={l + w:.0f}, top+height={t + h:.0f}.")
 
+    # ---------- 체크 4(표): 열 너비·행 높이 계약 ----------
+    # 브라우저는 auto layout, PPTX는 균등 분할 — colgroup 없이는 둘이 어긋난다.
+    for i, s in enumerate(sections, 1):
+        for tbl in s.find_all("table", class_="el-table"):
+            tst = {k: resolve_vars(v, root_vars) for k, v in parse_style(tbl.get("style", "")).items()}
+            tw, th = px(tst.get("width")), px(tst.get("height"))
+            rows = tbl.find_all("tr")
+            ncols = max((len(r.find_all(["td", "th"])) for r in rows), default=0)
+            cols = tbl.find_all("col")
+            widths = [px({k: resolve_vars(v, root_vars)
+                          for k, v in parse_style(c.get("style", "")).items()}.get("width")) for c in cols]
+            if len(widths) != ncols or not all(widths):
+                lint.add(4, "ERROR",
+                         f"S{i} .el-table: colgroup 열 너비 누락 — <col style=\"width:Npx\"> {ncols}개 필요 "
+                         "(브라우저 auto layout과 PPTX 균등 분할이 어긋난다, html-spec §6).")
+            elif tw and abs(sum(widths) - tw) > 1:
+                lint.add(4, "ERROR",
+                         f"S{i} .el-table: 열 너비 합 {sum(widths):.0f}px != 표 width {tw:.0f}px.")
+            heights = [px({k: resolve_vars(v, root_vars)
+                           for k, v in parse_style(r.get("style", "")).items()}.get("height")) for r in rows]
+            if all(heights) and th and abs(sum(heights) - th) > 1:
+                lint.add(4, "WARN",
+                         f"S{i} .el-table: 행 높이 합 {sum(heights):.0f}px != 표 height {th:.0f}px — "
+                         "PPTX가 비율 보정하므로 의도한 행 높이와 달라질 수 있다.")
+
     # ---------- 체크 5: 자기완결 ----------
     for tag in soup.find_all(src=True):
         if re.match(r"^https?://", tag["src"], re.I):
@@ -625,9 +650,10 @@ def main():
     # ---------- 체크 18: 민감정보 ----------
     full_text = "\n".join(s.get_text("\n") for s in sections)
     for label, pat in SENSITIVE_PATTERNS:
-        hits = pat.findall(full_text)
+        # finditer + group(0): 그룹이 있는 패턴에서 findall이 튜플을 돌려줘 예시가 깨지는 것을 막는다
+        hits = [m.group(0).strip() for m in pat.finditer(full_text)]
         if hits:
-            sample = hits[0] if isinstance(hits[0], str) else str(hits[0])
+            sample = re.sub(r"\s+", " ", hits[0])[:40]
             lint.add(18, "WARN", f"민감정보 의심 — {label}: 예 `{sample}` 외 {len(hits) - 1}건.")
             lint.safety_flags.append(f"{label} {len(hits)}건 검출 — 사용자 명시 확인 전 배포 금지 (STOP 게이트).")
 

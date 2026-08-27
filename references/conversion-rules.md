@@ -62,12 +62,21 @@ python-pptx의 도형·텍스트 모델로 재현할 수 없거나 PDF 인쇄에
 
 ### .el-table → PPTX 표
 - `tr`/`td·th` 격자 그대로. `thead th` = 헤더 행 bold.
+- **열 너비**: `<colgroup><col style="width:Npx">` 값을 표 width 기준으로 정규화해
+  `table.columns[i].width`에 넣는다. colgroup이 없으면 PPTX는 균등 분할이 되어 브라우저
+  auto layout과 어긋나므로 lint 체크 4가 ERROR로 막는다.
+- **행 높이**: `<tr style="height:Npx">` 지정 시 표 height 기준으로 정규화해 이관한다.
+  전 행에 지정이 없으면 python-pptx 균등 분배를 따른다.
+- **셀 여백·정렬**: `<style>`의 `.el-table th/td` 규칙에서 `padding`(단축 표기 해석)을
+  셀 margin_*으로, `vertical-align`을 vertical_anchor로 옮긴다. 인라인 셀 style이 우선한다.
+- **테두리**: CSS로 지정한 변만 그린다(`a:lnT/B/L/R` 직접 삽입). 미지정 변은 noFill —
+  PPTX 테마 기본 격자·첫 행 강조·줄무늬(first_row/horz_banding)는 모두 끈다.
+  색의 단일 원천은 셀 인라인 style이다.
 - 셀 인라인 style: `background(-color)`→셀 채우기, `color`→글자색, `text-align`→정렬,
   `font-size`→크기(미지정 시 `.el-table` 인라인 값, 기본 18px). 표 셀도 본문
   최소 크기 규칙(18px — html-spec §7, lint 체크 14 ERROR)을 그대로 따른다.
 - **colspan/rowspan 미지원** — 발견 시 변환 오류. 셀을 분해해 설계하라.
-- 표 테두리는 PPTX 테마 기본값을 따른다(셀 CSS 테두리는 이관되지 않음 — 시각 잔차로
-  사람 게이트 ④에서 확인).
+- 표 테두리는 위 규칙대로 CSS 지정분이 이관된다(테마 기본 격자 사용 안 함).
 
 ### aside.notes → 발표자 노트
 - `notes_slide` 텍스트 프레임으로 이관. `--image-slides` 모드에서도 이관된다.

@@ -67,13 +67,23 @@ HTML은 최종 목표가 아니라 **중간 렌더 단계**다. 브라우저 시
 | `.el-text` | div | 텍스트박스 | 내부 허용: `h1~h3`/`p`/`ul·ol·li`(**리스트 1단만 — 중첩 시 변환기 exit 2**), 인라인 `b/strong/em/span(color·font-weight·font-size)/a[href]`. 폰트 패밀리·크기·색·정렬은 인라인 style(또는 `.el-text` 인라인 상속). font-family 미지정 시 변환기가 `<style>`의 `.el-text`/`body` 규칙 값을 폴백으로 적용한다(conversion-rules §2) |
 | `.el-image` | img | picture | `src`는 로컬 상대 경로. 원본 해상도 ≥ 배치 px(권장 2배) |
 | `.el-shape` | div | 사각형 도형 | 단색 fill·border만. `border-radius>0`이면 라운드 사각형. `transform: rotate(Ndeg)` 단독 허용. 텍스트는 가급적 `.el-text`로 분리 |
-| `.el-table` | table | PPTX 표 | `thead th` = 헤더 행(bold). 셀 인라인 style로 배경·색·정렬. colspan/rowspan 미지원 |
+| `.el-table` | table | PPTX 표 | `thead th` = 헤더 행(bold). 셀 인라인 style로 배경·색·정렬. **`<colgroup><col style="width:Npx">` 필수**(열 수만큼, 합 = 표 width — 없으면 lint 체크 4 ERROR). 행 높이는 `<tr style="height:Npx">`. 셀 여백·수직 정렬·테두리는 `<style>`의 `.el-table th/td` 규칙을 변환기가 읽어 PPTX 셀에 이관한다. colspan/rowspan 미지원 |
 | `aside.notes` | aside | 발표자 노트 | `display:none`, 전 장표 필수·비어있으면 안 됨 (체크 17) |
 
 **헤딩 크기 규칙(필수)**: 기본 스타일시트에
 `.el-text h1, .el-text h2, .el-text h3 { font-size: inherit; font-weight: inherit; }`
 를 유지한다. UA 기본 배율(h1=2em)이 걸리면 브라우저 렌더와 변환 좌표가 어긋난다.
 크기·굵기는 `.el-text` 인라인 style에 명시한다.
+
+**표 규칙**: 브라우저는 auto layout, PPTX는 열 균등 분할이므로 `colgroup` 없이는 두 렌더가
+어긋난다. `table-layout: fixed` + `colgroup` 열 너비를 단일 원천으로 삼는다. 셀 패딩
+(`padding: 12px 16px`)·수직 정렬(`vertical-align: middle`)·구분선(헤더 하단 2px, 행 하단 1px,
+세로선 없음)은 boilerplate 스타일시트에 있고 변환기가 같은 값을 PPTX 셀 여백·앵커·테두리로
+옮긴다. 전면 격자(모든 변 1px)는 만들지 않는다.
+
+**링크 규칙**: `.el-text a { color: inherit; text-decoration: none; }`를 유지한다. UA 기본
+파란 글자+밑줄은 디자인 시스템 밖 색이며(체크 6 우회) PPTX 하이퍼링크 run 색과도 어긋난다.
+클릭 가능성은 버튼 도형과 문구로 알린다.
 
 **불릿 규칙**: `ul`은 `list-style-position: outside; padding-left: 28px`로 마커를
 표시한다. `li::before` 장식은 금지 CSS 6항이다. PPTX에서는 네이티브 불릿(buChar)으로

@@ -2,7 +2,27 @@
 
 SemVer. 버그 수정 = patch, 기능 추가 = minor, 호환성 파괴 = major.
 출처 표기: 실전 테스트 백로그(`skill-wizard-output/live-test-notes.md`)는 (#N), 감사 후 REFINE은
-(audit #N), salesclue 원문(`salesclue.io/blog/claude-design-ppt`) 대조 미준수분은 (SC-N).
+(audit #N), salesclue 원문(`salesclue.io/blog/claude-design-ppt`) 대조 미준수분은 (SC-N),
+렌더 게이트 실물 확인에서 나온 시각 결함은 (V-N).
+
+## 1.2.0 (2026-08-28)
+
+시각 산출물 실물 확인(렌더 게이트 ③)에서 드러난 표·링크 기본 스타일 부재를 닫았다.
+기존 덱은 `colgroup` 추가가 필요하다(체크 4 ERROR).
+
+- **표 기본 스타일 신설**: boilerplate에 셀 패딩(12px 16px)·수직 정렬(middle)·구분선
+  (헤더 하단 2px, 행 하단 1px, 세로선 없음)을 넣었다. 이전에는 `border: 1px` 격자만 있어
+  텍스트가 선에 붙고 행 안에서 위로 몰렸다. (V-1)
+- **열 너비 계약**: `<colgroup><col style="width:Npx">` 필수 + `table-layout: fixed`.
+  브라우저 auto layout과 PPTX 균등 분할이 어긋나던 문제를 단일 원천으로 해소했다.
+  lint 체크 4에 열 너비 누락·합 불일치 ERROR, 행 높이 합 불일치 WARN 추가. (V-2)
+- **변환기 표 이관 확장**: colgroup 열 너비·`<tr>` 행 높이·CSS padding→셀 여백·
+  vertical-align→앵커·CSS 지정 변만 그리는 테두리(`a:lnT/B/L/R`)를 이관하고,
+  PPTX 테마 기본 격자·첫 행 강조·줄무늬를 끈다. (V-3)
+- **링크 기본 스타일**: `.el-text a { color: inherit; text-decoration: none; }` 추가.
+  1.1.0에서 `<a href>` 지원을 넣으면서 UA 기본 파란 글자+밑줄이 그대로 렌더되던 문제. (V-4)
+- lint 체크 18 보고 예시가 캡처 그룹 때문에 튜플로 출력되던 버그 수정
+  (`findall` → `finditer` + `group(0)`). (V-5)
 
 ## 1.1.0 (2026-08-26)
 

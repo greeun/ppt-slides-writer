@@ -56,9 +56,27 @@ img.el-image { position: absolute; object-fit: contain; }
    변환기는 인라인 px 값을 좌표 근거로 삼으므로 브라우저 렌더와 일치해야 한다) */
 .el-text h1, .el-text h2, .el-text h3 { font-size: inherit; font-weight: inherit; }
 .el-text ul, .el-text ol { list-style-position: outside; padding-left: 28px; }
+/* 링크는 UA 기본(파란 글자+밑줄)을 쓰지 않는다 — 색은 부모 .el-text 인라인 style을 따르고,
+   변환기가 같은 색을 PPTX run에 적용한다. 클릭 가능성은 버튼 도형·문구로 알린다. */
+.el-text a { color: inherit; text-decoration: none; }
 .el-text li { margin-bottom: 8px; }
-.el-table { border-collapse: collapse; }
-.el-table th, .el-table td { border: 1px solid var(--color-line); }
+/* 표 기본 스타일 — 셀 패딩·수직 정렬·구분선. 변환기가 같은 값을 PPTX 셀 여백·
+   테두리로 이관하므로 여기 값을 바꾸면 변환 결과도 함께 바뀐다 (conversion-rules §3).
+   열 너비는 <colgroup><col style="width:Npx"> 로 명시한다 (미지정 시 lint ERROR —
+   브라우저 auto layout과 PPTX 균등 분할이 어긋난다). */
+.el-table { border-collapse: collapse; table-layout: fixed; }
+.el-table th, .el-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid var(--color-line);
+}
+.el-table thead th {
+  border-bottom: 2px solid var(--color-primary);  /* 헤더 구분은 굵은 밑줄 1개 */
+  font-weight: 700;
+}
+.el-table tbody tr:last-child td { border-bottom: 1px solid var(--color-line); }
 .el-text .source, .el-text .caption { color: var(--color-text); }
 aside.notes { display: none; } /* 발표자 노트 — 화면 비표시, PPTX notes로 이관 */
 </style>
@@ -95,10 +113,15 @@ aside.notes { display: none; } /* 발표자 노트 — 화면 비표시, PPTX no
        style="left: 520px; top: 460px; width: 240px; height: 135px;">
   -->
 
-  <!-- .el-table 예시: 셀 값은 나열이 아니라 판단(비교 기준)을 드러내야 한다
-  <table class="el-table" style="left: 96px; top: 300px; width: 1088px; height: 240px; font-family: var(--font-body); font-size: 18px;">
-    <thead><tr><th>기준</th><th>현행</th><th>제안</th></tr></thead>
-    <tbody><tr><td>{판단 기준}</td><td>{현행 판단}</td><td>{제안 판단}</td></tr></tbody>
+  <!-- .el-table 예시: 셀 값은 나열이 아니라 판단(비교 기준)을 드러내야 한다.
+       colgroup 열 너비 필수(합 = 표 width), height는 행 수 × 행 높이로 잡는다
+       (헤더 56px + 본문 행 56px 기준). 미지정 시 lint 체크 4 ERROR.
+  <table class="el-table" style="left: 96px; top: 300px; width: 1088px; height: 224px; font-family: var(--font-body); font-size: 18px;">
+    <colgroup><col style="width: 320px"><col style="width: 384px"><col style="width: 384px"></colgroup>
+    <thead><tr style="height: 56px"><th>기준</th><th>현행</th><th>제안</th></tr></thead>
+    <tbody>
+      <tr style="height: 56px"><td>{판단 기준}</td><td>{현행 판단}</td><td>{제안 판단}</td></tr>
+    </tbody>
   </table>
   -->
 

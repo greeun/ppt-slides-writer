@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
@@ -357,7 +357,81 @@ def add_shape_element(slide, el, idx, root_vars):
                     run.font.color.rgb = c
 
 
-def add_table_element(slide, el, idx, root_vars):
+def parse_padding(value):
+    """CSS padding 단축 표기 → (top, right, bottom, left) px. 미지정·해석 불가면 None."""
+    if not value:
+        return None
+    parts = [px(v) for v in str(value).split()]
+    if not parts or any(v is None for v in parts):
+        return None
+    if len(parts) == 1:
+        t = r = b = l = parts[0]
+    elif len(parts) == 2:
+        t = b = parts[0]; r = l = parts[1]
+    elif len(parts) == 3:
+        t, r, b = parts; l = r
+    else:
+        t, r, b, l = parts[:4]
+    return t, r, b, l
+
+
+def table_css_defaults(style_text, root_vars):
+    """<style>의 .el-table 셀 규칙(padding·vertical-align·border)을 추출한다.
+
+    boilerplate는 표 기본 스타일을 스타일시트에 두므로(인라인 아님) 변환기가
+    같은 값을 PPTX 셀 여백·테두리로 이관하려면 여기서 읽어야 한다.
+    반환: {"cell": {...}, "header": {...}} — 각 값은 CSS 선언 dict."""
+    out = {"cell": {}, "header": {}}
+    for m in re.finditer(r"([^{}]+)\{([^}]*)\}", style_text):
+        sel = m.group(1).strip()
+        if ".el-table" not in sel:
+            continue
+        decl = {k: resolve_vars(v, root_vars) for k, v in parse_style(m.group(2)).items()}
+        if not decl:
+            continue
+        key = "header" if "thead" in sel else ("cell" if re.search(r"\b(th|td)\b", sel) else None)
+        if key:
+            out[key].update(decl)
+    return out
+
+
+def set_cell_borders(cell, edges):
+    """PPTX 셀 테두리 설정 (python-pptx 미지원 — a:lnL/R/T/B 직접 삽입).
+
+    edges: {'L'|'R'|'T'|'B': (color|None, width_px)}. color None 또는 폭 0이면 noFill.
+    스키마상 tcPr 자식 순서는 lnL → lnR → lnT → lnB 이므로 역순으로 맨 앞에 넣는다."""
+    tcPr = cell._tc.get_or_add_tcPr()
+    for edge in ("L", "R", "T", "B"):
+        for old in tcPr.findall(qn("a:ln" + edge)):
+            tcPr.remove(old)
+    for edge in ("B", "T", "R", "L"):
+        color, width_px = edges.get(edge, (None, 0))
+        ln = tcPr.makeelement(qn("a:ln" + edge), {
+            "w": str(max(int(round(width_px * 12700 * 0.75)), 1)),
+            "cap": "flat", "cmpd": "sng", "algn": "ctr"})
+        if color is None or width_px <= 0:
+            ln.append(ln.makeelement(qn("a:noFill"), {}))
+        else:
+            fill = ln.makeelement(qn("a:solidFill"), {})
+            fill.append(fill.makeelement(qn("a:srgbClr"), {"val": str(color)}))
+            ln.append(fill)
+        tcPr.insert(0, ln)
+
+
+def border_spec(st, side, base_color):
+    """CSS border / border-<side> → (RGBColor|None, width_px). 미지정이면 (None, 0)."""
+    raw = st.get("border-" + side) or st.get("border")
+    if not raw or raw.strip() in ("none", "0", "0px"):
+        return (None, 0)
+    width = 1.0
+    m = re.search(r"(\d+(?:\.\d+)?)px", raw)
+    if m:
+        width = float(m.group(1))
+    color = parse_color(re.sub(r"(\d+(?:\.\d+)?px|solid|dashed|dotted|none)", "", raw).strip()) or base_color
+    return (color, width)
+
+
+def add_table_element(slide, el, idx, root_vars, css_table=None):
     st = merged_style(el, root_vars)
     geo = geometry(st, idx, ".el-table")
     if not geo:
@@ -375,21 +449,77 @@ def add_table_element(slide, el, idx, root_vars):
                 return
     gframe = slide.shapes.add_table(len(rows), ncols, emu(l), emu(t), emu(w), emu(h))
     table = gframe.table
+    # 첫 행 강조·줄무늬 기본값 해제 — 색은 셀 인라인 style이 단일 원천이다
+    table.first_row = False
+    table.horz_banding = False
+
+    # 열 너비: <colgroup><col style="width:Npx"> (브라우저 fixed layout과 PPTX를 일치시킨다)
+    cols = el.find_all("col")
+    widths = [px(merged_style(c, root_vars).get("width")) for c in cols][:ncols]
+    if len(widths) == ncols and all(v for v in widths):
+        scale = w / sum(widths)
+        for ci, cw in enumerate(widths):
+            table.columns[ci].width = emu(cw * scale)
+    # 행 높이: <tr style="height:Npx"> 지정 시 이관 (미지정이면 python-pptx 균등 분배)
+    row_px = [px(merged_style(r, root_vars).get("height")) for r in rows]
+    if all(v for v in row_px):
+        scale = h / sum(row_px)
+        for ri, rh in enumerate(row_px):
+            table.rows[ri].height = emu(rh * scale)
+
+    css_table = css_table or {"cell": {}, "header": {}}
     table_fs = px(st.get("font-size")) or 18  # 미지정 시 본문 최소 크기(html-spec §7)와 동일
     for ri, r in enumerate(rows):
         cells = r.find_all(["td", "th"])
+        row_style = merged_style(r, root_vars)
         for ci in range(ncols):
             cell = table.cell(ri, ci)
             if ci >= len(cells):
                 continue
             src_cell = cells[ci]
-            cst = merged_style(src_cell, root_vars)
+            is_header = src_cell.name == "th"
+            # 스타일 우선순위: <style> 셀 규칙 → (헤더면) thead 규칙 → tr 인라인 → 셀 인라인
+            base = dict(css_table.get("cell", {}))
+            if is_header:
+                base.update(css_table.get("header", {}))
+            base.update({k: v for k, v in row_style.items() if k not in ("height",)})
+            cst = merged_style(src_cell, root_vars, base=base)
             fam = first_font_family(cst.get("font-family") or st.get("font-family")) or default_family
             cell.text = re.sub(r"\s+", " ", src_cell.get_text(" ", strip=True))
+
+            # 셀 여백 = CSS padding (미지정 시 PPTX 기본값 유지)
+            pad = parse_padding(cst.get("padding"))
+            if pad:
+                ptop, pright, pbottom, pleft = pad
+                cell.margin_top = emu(ptop)
+                cell.margin_right = emu(pright)
+                cell.margin_bottom = emu(pbottom)
+                cell.margin_left = emu(pleft)
+            # 수직 정렬
+            va = (cst.get("vertical-align") or "").strip().lower()
+            if va in ("middle", "center"):
+                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+            elif va == "bottom":
+                cell.vertical_anchor = MSO_ANCHOR.BOTTOM
+            elif va == "top":
+                cell.vertical_anchor = MSO_ANCHOR.TOP
+
             bg = parse_color(cst.get("background-color") or cst.get("background"))
             if bg is not None:
                 cell.fill.solid()
                 cell.fill.fore_color.rgb = bg
+            else:
+                cell.fill.background()  # PPTX 테마 기본 채우기 제거 (HTML은 투명)
+
+            # 테두리: CSS 지정분만 그린다. 미지정 변은 noFill — 엑셀식 전면 격자를 만들지 않는다
+            line_color = parse_color(cst.get("border-color"))
+            set_cell_borders(cell, {
+                "T": border_spec(cst, "top", line_color),
+                "B": border_spec(cst, "bottom", line_color),
+                "L": border_spec(cst, "left", line_color),
+                "R": border_spec(cst, "right", line_color),
+            })
+
             for para in cell.text_frame.paragraphs:
                 al = ALIGN_MAP.get(cst.get("text-align", "").strip())
                 if al is not None:
@@ -398,7 +528,7 @@ def add_table_element(slide, el, idx, root_vars):
                     run.font.size = pt_from_px(px(cst.get("font-size")) or table_fs)
                     if fam:
                         run.font.name = fam
-                    if src_cell.name == "th" or cst.get("font-weight") in ("bold", "600", "700"):
+                    if is_header or cst.get("font-weight") in ("bold", "600", "700", "800", "900"):
                         run.font.bold = True
                     c = parse_color(cst.get("color"))
                     if c:
@@ -479,6 +609,7 @@ def main():
     root_vars = parse_root_vars(style_text)
     global default_family
     default_family = doc_default_family(style_text, root_vars)
+    css_table = table_css_defaults(style_text, root_vars)
 
     # .slide 기본 배경 (CSS 규칙에서 추출, 섹션 인라인이 우선)
     default_bg = None
@@ -531,7 +662,7 @@ def main():
                 elif "el-shape" in classes:
                     add_shape_element(slide, child, idx, root_vars)
                 elif "el-table" in classes:
-                    add_table_element(slide, child, idx, root_vars)
+                    add_table_element(slide, child, idx, root_vars, css_table)
                 else:
                     errors.append(
                         f"S{idx}: 파싱 집합 외 직계 요소 <{child.name} class={classes}> — "
