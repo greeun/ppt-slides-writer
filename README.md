@@ -143,6 +143,7 @@ lint(기계) → LLM 리뷰(Evaluator + slide-reviewer 연계) → 사람 게이
 | 단 | 수단 | 범위 |
 |---|---|---|
 | 1단 | `scripts/lint_slides.py` / `scripts/verify_conversion.py` | 체크 1~20 / 변환 충실도 21~26 |
+| 1단 보조 | `scripts/shot_slides.py` | 장별 PNG 캡처 — 형식·수량 검증이 못 보는 레이아웃 품질을 픽셀로 확인 |
 | 2단 | Evaluator 루브릭(`references/rubric.md`) + 적대적 프로브 9종 | 구조·논리·일관성 |
 | 3단 | 사람 게이트 ①~④ | 시각 잔차, 최종 책임 판단 |
 
@@ -218,6 +219,7 @@ Simplified로 전환한다면 제거 1순위는 스프린트 분해와 `sprint_c
 | `scripts/lint_slides.py` | 기계 lint 체크 1~20 (`--partial` 조각 모드, 제목 폭 안전 계수 WARN) |
 | `scripts/html2pptx.py` | 네이티브 PPTX 변환기 (`--image-slides` 옵션) |
 | `scripts/html2pdf.sh` | headless Chrome PDF 인쇄 |
+| `scripts/shot_slides.py` | 장별 PNG 캡처 — 렌더 게이트 ③ 선행 확인·Evaluator 시각 프로브 |
 | `scripts/verify_conversion.py` | 변환 충실도 검증 21~26 |
 
 `skills/`와 `resources/`는 이 스킬의 payload가 아니라 **연계 대상**이다. 패키징에서는
@@ -243,4 +245,4 @@ Simplified로 전환한다면 제거 1순위는 스프린트 분해와 `sprint_c
 
 ## Version
 
-`1.2.0` — 변경 이력은 `references/changelog.md`.
+`1.3.0` — 변경 이력은 `references/changelog.md`.

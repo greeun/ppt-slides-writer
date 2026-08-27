@@ -304,9 +304,58 @@ window.addEventListener('load', function () {
                      lw: Math.round(lw), bw: bw, lines: lines, bh: bh, lh: Math.round(lh)});
     });
   });
+  // 여백 균형 측정 (체크 10) — 박스 대비 콘텐츠 점유율·장표 하단 공백·도형 내부 하단 공백
+  var balance = [];
+  slides.forEach(function (s, i) {
+    var sr = s.getBoundingClientRect();
+    var els = Array.prototype.slice.call(s.querySelectorAll('[class*="el-"]'));
+    var maxBottom = 0;
+    els.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.bottom - sr.top > maxBottom) maxBottom = r.bottom - sr.top;
+    });
+    if (els.length && s.clientHeight - maxBottom > 160)
+      balance.push({slide: i + 1, kind: 'slide-bottom',
+                    gap: Math.round(s.clientHeight - maxBottom), box: s.clientHeight});
+
+    // .el-text: 실제 텍스트 높이 대비 박스 높이
+    s.querySelectorAll('.el-text').forEach(function (el) {
+      var range = document.createRange();
+      range.selectNodeContents(el);
+      var cr = range.getBoundingClientRect();
+      var used = cr.height, box = el.clientHeight;
+      if (box >= 80 && used > 0 && box - used > 48 && used / box < 0.5)
+        balance.push({slide: i + 1, kind: 'text-box', el: el.className,
+                      used: Math.round(used), box: Math.round(box)});
+    });
+
+    // .el-shape(카드): 도형 위에 겹치는 .el-text들의 최하단과 도형 하단 사이 공백
+    s.querySelectorAll('.el-shape').forEach(function (sh) {
+      var b = sh.getBoundingClientRect();
+      if (b.height < 120) return;
+      // 배경 띠·전면 배경 도형은 카드가 아니다 (폭이 장표 폭의 0.95배 이상이면 배경으로 본다)
+      if (b.width >= s.clientWidth * 0.95) return;
+      var inner = 0, found = false;
+      s.querySelectorAll('.el-text').forEach(function (tx) {
+        var t = tx.getBoundingClientRect();
+        if (t.left >= b.left - 2 && t.right <= b.right + 2 &&
+            t.top >= b.top - 2 && t.top < b.bottom) {
+          found = true;
+          var range = document.createRange();
+          range.selectNodeContents(tx);
+          var cr = range.getBoundingClientRect();
+          var bottom = (cr.height ? cr.bottom : t.bottom) - b.top;
+          if (bottom > inner) inner = bottom;
+        }
+      });
+      if (found && b.height - inner > 80)
+        balance.push({slide: i + 1, kind: 'shape-inner',
+                      gap: Math.round(b.height - inner), box: Math.round(b.height)});
+    });
+  });
   var pre = document.createElement('pre');
   pre.id = '__lint_overflow__';
-  pre.textContent = JSON.stringify({overflow: out, titles: titles});
+  pre.textContent = JSON.stringify({overflow: out, titles: titles, balance: balance});
   document.body.appendChild(pre);
 });
 </script>
@@ -335,6 +384,21 @@ window.addEventListener('load', function () {
                      f"scroll {item.get('sw','?')}x{item.get('sh','?')} > client {item.get('cw','?')}x{item.get('ch','?')}")
         if not data.get("overflow"):
             lint.add(4, "INFO", "렌더 오버플로 검사 통과 (Chrome 측정).")
+        for item in data.get("balance", []):
+            if item["kind"] == "slide-bottom":
+                lint.add(10, "WARN",
+                         f"여백 균형 — S{item['slide']}: 마지막 요소 아래 {item['gap']}px 공백 "
+                         f"(장표 높이 {item['box']}px). 콘텐츠가 상단에 몰렸다 — 요소를 아래로 펼치거나 "
+                         "하단 요약·근거 블록을 추가한다.")
+            elif item["kind"] == "text-box":
+                lint.add(10, "WARN",
+                         f"여백 균형 — S{item['slide']} `{item['el']}`: 텍스트 실측 {item['used']}px / "
+                         f"박스 {item['box']}px (점유율 {item['used'] / item['box']:.0%}). 박스 높이를 줄이거나 "
+                         "내용을 보강한다 — PPTX 텍스트박스도 같은 빈 공간으로 변환된다.")
+            else:
+                lint.add(10, "WARN",
+                         f"여백 균형 — S{item['slide']} `.el-shape`: 도형 안 콘텐츠 아래 {item['gap']}px 공백 "
+                         f"(도형 높이 {item['box']}px). 카드 높이를 내용에 맞춘다.")
         for item in data.get("titles", []):
             limit = item["bw"] * TITLE_WIDTH_SAFETY
             n = item["lines"]

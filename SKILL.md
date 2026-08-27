@@ -9,7 +9,7 @@ description: >
   Triggers — EN: "ppt", "pptx", "slide deck", "presentation", "make slides",
   "pitch deck". KO: "발표자료", "슬라이드", "피치덱", "PPT 만들어", "장표 만들어",
   "발표 자료 작성", "슬라이드 만들어", "제안 발표 자료".
-version: 1.2.0
+version: 1.3.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion]
 context: fork
 ---
@@ -142,6 +142,10 @@ Evaluator는 마크업·기계 검증으로 판정 가능한 것만 채점하고
 lint(기계) → LLM 리뷰(Evaluator + slide-reviewer 연계) → 사람 게이트(①~④)
 ```
 - 1단: `scripts/lint_slides.py`(체크 1~20) + `scripts/verify_conversion.py`(21~26).
+  **기계 검증의 사각지대**: lint는 형식(색·폰트·좌표·줄 수), 변환 검증은 수량(장수·
+  텍스트 손실·페이지)을 본다. 레이아웃 품질은 체크 10의 여백 균형 WARN(박스 점유율·
+  장표 하단 공백·도형 내부 공백)이 부분적으로만 잡으므로, `scripts/shot_slides.py`로
+  캡처한 PNG를 2단(Evaluator 프로브 5)과 3단(게이트 ③ 선행 확인)에서 실제로 본다.
 - 2단: Evaluator 루브릭 채점(`references/rubric.md`) + 적대적 프로브 9종.
 - 3단: 사람 게이트 4개 — 시각 잔차와 최종 책임 판단.
 - 수정 순서는 P0→P1→P2. **lint 우선 원칙**: 기계로 잡히는 문제를 LLM·사람 게이트로
@@ -266,6 +270,7 @@ Evaluator 검증)은 "현행 모델에서 스프린트 분해와 상시 Evaluato
 | `scripts/lint_slides.py` | 기계 lint 체크 1~20 (정적 + Chrome 렌더 검사, `--partial` 조각 모드, 제목 폭 WARN) |
 | `scripts/html2pptx.py` | 네이티브 PPTX 변환기 (python-pptx, --image-slides 옵션) |
 | `scripts/html2pdf.sh` | headless Chrome PDF 인쇄 |
+| `scripts/shot_slides.py` | 장별 PNG 캡처 (렌더 게이트 ③ 선행 확인·Evaluator 프로브 5) |
 | `scripts/verify_conversion.py` | 변환 충실도 검증 21~26 |
 
 주의: 스킬 루트의 `skills/`(image-gen 등)와 `resources/`(ai-slop SSOT)는 이 스킬의

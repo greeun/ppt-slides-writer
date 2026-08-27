@@ -63,8 +63,14 @@ Generator 파견 금지.
    기록**하고 오케스트레이터 STOP 게이트로 에스컬레이션한다.
 4. **수치 출처 대조**: storyline.md의 수치 ↔ deck.html의 수치 ↔ 출처 표기(.source)의
    3자 일치를 대조한다. 하나라도 어긋나면 장표 번호와 함께 기록한다.
-5. **오버플로·잘림**: lint_report.md의 렌더 검사 결과를 확인하고, .el-* 인라인
-   좌표(left+width ≤ 1280, top+height ≤ 720)를 검산한다.
+5. **오버플로·잘림 + 실제 렌더 확인**: lint_report.md의 렌더 검사 결과를 확인하고,
+   .el-* 인라인 좌표(left+width ≤ 1280, top+height ≤ 720)를 검산한다.
+   **그리고 장별 PNG를 실제로 캡처해 눈으로 본다**:
+   python3 {SKILL_DIR}/scripts/shot_slides.py {WORK_DIR}/deck.html --out-dir {WORK_DIR}/shots
+   캡처한 PNG를 Read로 열어 확인한다. 마크업만 읽으면 "박스는 있는데 그 안이 비어
+   보인다"·"좌우 블록 무게가 안 맞는다"를 볼 수 없다. lint 체크 10의 여백 균형 WARN이
+   있으면 해당 장표 PNG를 우선 본다. Chrome 부재로 캡처가 불가하면 그 사실을
+   critique.md에 명시하고 해당 항목을 사람 게이트로 이관한다 — 조용히 건너뛰지 않는다.
 6. **템플릿 리듬**: 연속 3장 동일 레이아웃 구조를 검출한다 (섹션별 .el-* 구성
    시그니처를 비교 — 예: "좌 텍스트+우 이미지"가 3연속이면 위반).
 7. **시간 정합**: storyline.md 장별 예상 시간 합 = 발표 시간 ±10% 검산.

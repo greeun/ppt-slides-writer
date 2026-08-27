@@ -5,6 +5,17 @@
 
 ## 사람 게이트 ③ — HTML 렌더 게이트
 
+0. **오케스트레이터 선행 확인 (필수)**: 사용자에게 보여주기 전에 장별 PNG를 캡처해
+   **직접 눈으로 본다**.
+   ```
+   python3 {SKILL_DIR}/scripts/shot_slides.py slides-work/<deck-slug>/deck.html \
+       --out-dir slides-work/<deck-slug>/shots
+   ```
+   캡처본을 Read로 열어 장별로 확인하고, 눈에 띄는 결함(빈 하단, 카드 안 공백, 대비
+   부족, 좌우 무게 불균형)은 이 단계에서 고친 뒤 게이트를 연다. lint 체크 10의 여백
+   균형 WARN이 있으면 해당 장표를 우선 본다. **검사 통과 = 볼 만하다가 아니다** —
+   lint는 형식을, 변환 검증은 수량을 볼 뿐 레이아웃 품질은 픽셀로만 확인된다.
+   Chrome 부재로 캡처가 불가하면 그 사실을 사용자에게 고지하고 게이트를 연다.
 1. 사용자에게 브라우저 확인을 안내한다:
    ```
    open slides-work/<deck-slug>/deck.html
