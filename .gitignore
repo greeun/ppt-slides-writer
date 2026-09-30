@@ -50,3 +50,7 @@ __pycache__/
 .env*
 !.env*.example
 !.env*.template
+
+# Synology links restored by mac-setup (lists/project-links.txt)
+/skill-wizard-output
+/slides-work
